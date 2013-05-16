@@ -1,0 +1,19 @@
+Manual Maven Build:
+cd bambi-editor
+
+# adds lastest build to repository
+mvn clean install -P prod
+
+# generates jar without touching the repo
+mvn clean package -P prod
+
+To execute:
+cd target
+java -Xms128M -Xmx1024M -Dlog4j.configuration=file:/home/zima/log4j.xml -jar bambi-editor-1.0.jar /home/zima/app.properties
+or
+java -Xms128M -Xmx1024M -Dlog4j.configuration=file:./log4j.xml -jar bambi-editor-1.0.jar ./app.properties
+
+** Adding Java WebStart API to local Maven repo **
+mvn install:install-file -Dfile=/usr/lib/jvm/java-7-oracle/jre/lib/javaws.jar -DgroupId=javax.jnlp -DartifactId=jnlp-api -Dversion=1.7.0 -Dpackaging=jar
+
+Obviously set your path to javaws.jar

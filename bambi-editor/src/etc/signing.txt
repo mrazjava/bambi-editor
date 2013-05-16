@@ -1,0 +1,3 @@
+Signing JAR file notes can be found in the bambi project under:
+
+../bambi/sign/

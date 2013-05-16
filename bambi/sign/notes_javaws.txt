@@ -1,0 +1,14 @@
+On Ubuntu, java path and javaws path are two different things. You could do:
+
+java -version
+
+get one version, yet javaws could run on another. If have more than one JVM 
+install on the dev machine, always check the following:
+
+sudo update-alternatives --config java
+sudo update-alternatives --config javaws
+
+The thing is, that IcedTea implementation works a lot different than Oracle's. 
+Specifically, the DownloadServiceListener (custom downloader / progress) is 
+not supported by IcedTea - instead, splash is displayed with a built in 
+shitty progress.

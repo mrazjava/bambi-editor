@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.zimowski.bambi</groupId>
+	<artifactId>bambi</artifactId>
+	<packaging>pom</packaging>
+	<version>${global.version}</version>
+	<name>Bambi Imaging Suite</name>
+	<properties>
+		<!-- Unique entry point for version number management -->
+		<global.version>0.9</global.version>
+	</properties>
+	<url>www.bambieditor.com</url>
+
+	<modules>
+		<module>../bambi-commons</module>
+		<module>../bambi-controls</module>
+		<module>../bambi-editor</module>
+		<module>../bambi-webstart</module>
+	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<!-- <profiles> <profile> <id>dev</id> <activation> <activeByDefault>true</activeByDefault> 
+		</activation> </profile> <profile> <id>prod</id> <build> <resources> <resource> 
+		<directory>src/main/java/</directory> <includes> <include>**/*.png</include> 
+		<include>**/*.jpeg</include> <include>**/*.jpg</include> </includes> </resource> 
+		</resources> </build> </profile> </profiles> -->
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+	</dependencies>
+</project>

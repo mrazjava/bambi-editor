@@ -1,0 +1,19 @@
+http://wiki.plexinfo.net/index.php?title=How_to_sign_JAR_files
+
+' Build webstart JAR
+mvn clean package -P ws
+
+' ONE TIME: generate keystore (cert)
+keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048
+' SIGN WITH ORACLE TOOL
+/usr/lib/jvm/java-7-oracle/bin/jarsigner -keystore ../../bambi/sign/keystore.jks -signedjar /var/www/bambi/bambi-editor-1.0.jar -storepass password bambi-editor-1.0.jar selfsigned
+
+' to clear java webstart cache:
+javaws -uninstall
+
+' verify jar signature
+jarsigner -verify -certs -verbose bambi-editor-1.0.jar
+
+------------------------- SIGN COMMAND -----------------------------------------
+jarsigner -keystore ../../bambi/sign/keystore.jks -signedjar /var/www/bambi/bambi-editor-1.0.jar -storepass password bambi-editor-1.0.jar selfsigned
+jarsigner -keystore ../../bambi/sign/keystore.jks -signedjar /var/www/bambi/bambi-webstart-1.0.jar -storepass password bambi-webstart-1.0.jar selfsigned

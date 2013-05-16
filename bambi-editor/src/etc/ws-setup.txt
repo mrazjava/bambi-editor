@@ -1,0 +1,68 @@
+------------------- Web Start Deployment Scheme --------------------------------
+
+bambi-editor-XX.jar
+bambi-webstart-XX.jar
+bambi.jnlp
+
+will be hosted on www.bambieditor.com.
+
+Developers will be required to provide:
+
+bambi-editor-config-XX.jar
+
+This file will contain customized bambi.properties, one for each deployment.
+The most important configuration in bambi.properties is definition of how to 
+scale and upload photos to developer's website. 
+They could have as many deployments as they wish (different configurations), 
+and by pointing to bambieditor.com JNLP the core components will only be 
+downloaded once.
+
+A sample developer bambi.jnlp could be setup as follows:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="http://rabbit/bambi/" href="http://hippo.lan/bambi/bambi.jnlp">
+
+    <information>
+        <title>Bambi Editor Configuration</title>
+        <vendor>Badger Poker</vendor>
+    </information>
+
+    <resources>
+        <!-- Application Resources -->
+        <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+        <jar href="http://zimowski.org/bambi/bambi-editor-config-1.0.jar" />
+        <extension name="core" href="http://rabbit/bambi/bambi.jnlp"/>
+    </resources>
+
+    <application-desc name="Image Editor and  Uploader" main-class="org.zimowski.bambi.editor.BambiApp" />
+
+</jnlp>
+
+The extension "core" will always point to the same bambieditor.com URL. This 
+configuration allows end users to always get a copy of bambi editor from 
+trusted bambi source and cache only a single copy, regardless of how many 
+websites may be using it.
+
+A sample core bambi.jnlp is provided below:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="/bambi" href="http://rabbit/bambi/bambi.jnlp">
+    <information>
+        <title>Bambi Editor Core</title>
+        <vendor>mrazjava</vendor>
+        <description>Image editor and uploader</description>
+        <icon href="bambi_splash.png" kind="splash"/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <!-- Application Resources -->
+        <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+        <jar href="http://rabbit/bambi/bambi-webstart-1.0.jar" download="progress" />
+        <jar href="http://rabbit/bambi/bambi-editor-0.9.jar" main="true" />
+    </resources>
+
+    <component-desc progress-class="org.zimowski.bambi.webstart.WebStartProgress" />
+    <update check="always" policy="always"/>
+</jnlp>
