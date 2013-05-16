@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -16,6 +17,8 @@ import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
 
 /**
  * Helps to send POST HTTP requests with various form data and also allows 
@@ -41,9 +44,9 @@ public class MultipartFormPost {
 	
 	private Map<String, String> cookies = new HashMap<String, String>();
 	
-	private MultipartFormPostListener progressListener = null;
+	private UploadProgressMonitor progressListener = null;
 	
-	private MultipartFormPostKiller killer = null;
+	private UploadAbortInformer killer = null;
 	
 	private StringBuffer cookieList = new StringBuffer();
 	
@@ -134,7 +137,7 @@ public class MultipartFormPost {
 	 *            the URL to send request to
 	 * @throws Exception
 	 */
-	public MultipartFormPost(URL url) throws Exception {
+	public MultipartFormPost(URL url) {
 		this.url = url;
 	}
 
@@ -145,7 +148,7 @@ public class MultipartFormPost {
 	 *            the string representation of the URL to send request to
 	 * @throws Exception
 	 */
-	public MultipartFormPost(String urlString) throws Exception {
+	public MultipartFormPost(String urlString) throws MalformedURLException {
 		this(new URL(urlString));
 	}
 
@@ -155,7 +158,7 @@ public class MultipartFormPost {
 	 * 
 	 * @param progressListener progress callback
 	 */
-	public void setProgressListener(MultipartFormPostListener progressListener) {
+	public void setProgressListener(UploadProgressMonitor progressListener) {
 		this.progressListener = progressListener;
 	}
 
@@ -164,7 +167,7 @@ public class MultipartFormPost {
 	 * 
 	 * @param killer
 	 */
-	public void setKiller(MultipartFormPostKiller killer) {
+	public void setKiller(UploadAbortInformer killer) {
 		this.killer = killer;
 	}
 
@@ -274,7 +277,7 @@ public class MultipartFormPost {
 
 		synchronized(in) {
 			while((nread = in.read(buf, 0, buf.length)) > 0) {
-				if(killer != null && killer.isMultipartFormPostAborted()) {
+				if(killer != null && killer.isUploadAborted()) {
 					if(!inner) {
 						log.debug("aborting! processed {} bytes", total);
 						throw new AbortException(total);

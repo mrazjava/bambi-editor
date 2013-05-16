@@ -1,4 +1,4 @@
-package org.zimowski.bambi.editor.formpost;
+package org.zimowski.bambi.editor.plugins.api;
 
 /**
  * An object implementing this interface will be notified of data transfer 
@@ -7,10 +7,10 @@ package org.zimowski.bambi.editor.formpost;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public interface MultipartFormPostListener {
+public interface UploadProgressMonitor {
     
 	/**
-	 * Fired every time when buffer chunk was transferred.
+	 * Fired every time when data buffer was transferred.
 	 * 
 	 * @param bytes total bytes transferred so far.
 	 */

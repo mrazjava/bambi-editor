@@ -91,12 +91,12 @@ import org.zimowski.bambi.editor.customui.statusbar.RgbCell;
 import org.zimowski.bambi.editor.customui.statusbar.StatusBar;
 import org.zimowski.bambi.editor.customui.statusbar.TextCell;
 import org.zimowski.bambi.editor.filters.ImageFilterOps;
-import org.zimowski.bambi.editor.formpost.MultipartFormPost;
-import org.zimowski.bambi.editor.formpost.MultipartFormPostKiller;
-import org.zimowski.bambi.editor.formpost.MultipartFormPostListener;
-import org.zimowski.bambi.editor.formpost.MultipartFormPostStatusListener;
-import org.zimowski.bambi.editor.formpost.MultipartFormPostWorker;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageUploader;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
+import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
 import org.zimowski.bambi.editor.studio.cam.CamFilterOps;
 import org.zimowski.bambi.editor.studio.cam.CamInitializationObserver;
 import org.zimowski.bambi.editor.studio.cam.CamPanel;
@@ -142,7 +142,7 @@ import com.google.common.eventbus.Subscribe;
  */
 public class Editor extends JPanel implements 
 		ItemListener, ImageOutputConfigFacade, SelectorObserver, 
-		CamInitializationObserver, FpsObserver, MultipartFormPostKiller, 
+		CamInitializationObserver, FpsObserver, UploadAbortInformer, 
 		WindowListener {
 
 	private static final long serialVersionUID = 628351245437307334L;
@@ -1462,11 +1462,11 @@ public class Editor extends JPanel implements
     }
     
     /**
-     * GUI handling of all possible transfer outcomes.
+     * Additional GUI handling for certain upload outcomes.
      * 
      * @author Adam Zimowski (mrazjava)
      */
-    class MultipartFormPostStatusListenerImpl implements MultipartFormPostStatusListener {
+    class EditorUploadStateMonitor implements UploadStateMonitor {
 		
 		@Override
 		public void uploadSuccess(long bytesReceived) {
@@ -1556,54 +1556,58 @@ public class Editor extends JPanel implements
 				return;
 			}
 
+			int scaleWidth = getTargetWidth();
+			int scaleHeight = getTargetHeight();
+	    	ScaleFilter filter = new ScaleFilter(scaleWidth, scaleHeight);
+
+			BufferedImage scaledImage = filter.filter(image, null);
+			//ImageUtil.scaleImage(aImage, scaleWidth, scaleHeight);
+			final ImageTaskCell cell = statusBar.getUploadCell();
+			final JProgressBar progressBar = cell.getProgressBar();
+			
+			String encLoginId = null;	// encrypted if necessary
+			String encPassword = null;	// encrypted if necessary
+			
+			if(config.isAuthenticationRequired()) {
+				TextEncrypter loginIdEncrypter = config.getLoginIdEncrypter();
+				encLoginId = loginIdEncrypter.encrypt(loginId);
+				TextEncrypter passwordEncrypter = config.getPasswordEncrypter();
+				encPassword = passwordEncrypter.encrypt(password);
+			}
+			else {
+				encLoginId = loginId;
+				encPassword = password;
+			}
+			
+			String url = config.getRemoteHost() + "/" + getSubmitUrl();
+			
+			List<UploadStateMonitor> stateMonitors = 
+					new LinkedList<UploadStateMonitor>();
+			stateMonitors.add(new EditorUploadStateMonitor());
+			stateMonitors.add(statusBar.getUploadCell());
+			
 			try {
-				int scaleWidth = getTargetWidth();
-				int scaleHeight = getTargetHeight();
-		    	ScaleFilter filter = new ScaleFilter(scaleWidth, scaleHeight);
+				final byte[] scaledImageBytes = bufferedImageToByteArray(scaledImage);
 
-				BufferedImage scaledImage = filter.filter(image, null);
-				//ImageUtil.scaleImage(aImage, scaleWidth, scaleHeight);
-				final ImageTaskCell cell = statusBar.getUploadCell();
-				final JProgressBar progressBar = cell.getProgressBar();
-				
-				try {
-					final byte[] scaledImageBytes = bufferedImageToByteArray(scaledImage);
-					//final String fileName = config.getUserid() + "." + getImageOutputFormat();
-					final String fileName = new Long(System.currentTimeMillis()).toString() + 
-							"." + getImageOutputFormat();
+				progressBar.setMaximum(scaledImageBytes.length);
+				progressBar.setString(null);
+				progressBar.setValue(0);
 
-					String host = config.getRemoteHost() + "/";
-					String target = getSubmitUrl();
-			    	
-					final MultipartFormPost chr = new MultipartFormPost(host + target);
+				ImageUploader uploader = new MultipartFormPostUploader();
+				uploader.upload(
+						scaledImageBytes, 
+						getImageOutputFormat(), 
+						url, 
+						encLoginId, 
+						encPassword, 
+						Editor.this, 
+						new EditorUploadProgressMonitor(), 
+						stateMonitors);
 					
-					if(config.isAuthenticationRequired()) {
-						TextEncrypter loginIdEncrypter = config.getLoginIdEncrypter();
-						chr.setUserId(loginIdEncrypter.encrypt(loginId));
-						TextEncrypter passwordEncrypter = config.getPasswordEncrypter();
-						chr.setPassword(passwordEncrypter.encrypt(password));
-					}
-					
-					chr.setProgressListener(new MultipartFormPostListenerImpl());
-					chr.setKiller(Editor.this);
-					
-			    	progressBar.setMaximum(scaledImageBytes.length);
-					progressBar.setString(null);
-					progressBar.setValue(0);
-					
-					MultipartFormPostWorker worker = new MultipartFormPostWorker(chr, scaledImageBytes, fileName);
-					worker.addStatusListener(new MultipartFormPostStatusListenerImpl());
-					worker.addStatusListener(cell);
-					worker.execute();
-					
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-				}
-
 				setUploadState(UploadState.InProgress);
 			}
 			catch(Exception e) {
+				// should not happen but plugins, like kids, could mis-behave
 				JOptionPane.showMessageDialog(
 						Editor.this, 
 						e.getMessage(), 
@@ -1793,7 +1797,7 @@ public class Editor extends JPanel implements
     }
     
 	@Override
-	public boolean isMultipartFormPostAborted() {
+	public boolean isUploadAborted() {
 		return abort;
 	}
 	
@@ -2124,7 +2128,7 @@ public class Editor extends JPanel implements
 	 * 
 	 * @author Adam Zimowski (mrazjava)
 	 */
-	class MultipartFormPostListenerImpl implements MultipartFormPostListener {
+	class EditorUploadProgressMonitor implements UploadProgressMonitor {
 		@Override
 		public void bytesTransferred(final int bytes) {
         	ProgressBarCell cell = statusBar.getUploadCell();

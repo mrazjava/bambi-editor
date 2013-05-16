@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.config.Configuration;
-import org.zimowski.bambi.editor.formpost.MultipartFormPostStatusListener;
+import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
 import org.zimowski.bambi.editor.studio.eventbus.EventBusManager;
 import org.zimowski.bambi.editor.studio.eventbus.events.ImageFilterMonitorEvent;
 import org.zimowski.bambi.editor.studio.eventbus.events.ImageFilterQueueEvent;
@@ -37,7 +37,7 @@ import com.google.common.eventbus.Subscribe;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class ImageTaskCell extends ProgressBarCell implements MultipartFormPostStatusListener {
+public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor {
 
 	private static final long serialVersionUID = 4456415422381527492L;
 	

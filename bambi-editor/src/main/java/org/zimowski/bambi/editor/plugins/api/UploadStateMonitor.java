@@ -1,11 +1,15 @@
-package org.zimowski.bambi.editor.formpost;
+package org.zimowski.bambi.editor.plugins.api;
 
 import java.util.Date;
 
+import org.zimowski.bambi.editor.formpost.AbortException;
+
 /**
+ * Allows to handle different stages of the upload process.
+ * 
  * @author Adam Zimowski (mrazjava)
  */
-public interface MultipartFormPostStatusListener {
+public interface UploadStateMonitor {
 
 	/**
 	 * Fired when post is finished. This is the last event in the lifecycle of  

@@ -1,26 +1,31 @@
-package org.zimowski.bambi.editor.formpost;
+package org.zimowski.bambi.editor.plugins;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.SwingWorker;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zimowski.bambi.editor.config.ImageOutputFormat;
+import org.zimowski.bambi.editor.formpost.AbortException;
+import org.zimowski.bambi.editor.formpost.MultipartFormPost;
+import org.zimowski.bambi.editor.plugins.api.AbstractUploader;
+import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
 
 /**
  * Sends data using {@link MultipartFormPost} off an EDT thread keeping the
  * GUI responsive. Capable of processing server response according to a custom
  * protocol. Does not perform any gui drawing, but delegates these tasks via 
- * {@link MultipartFormPostStatusListener}.
+ * {@link UploadStateMonitor}.
  * <p>
  * The spec for this protocol server response is multi-line plain text in
  * KEY|VALUE format where KEY is the message identifier which Bambi knows about
@@ -56,27 +61,54 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class MultipartFormPostWorker extends SwingWorker<Void, Void> {
+public class MultipartFormPostUploader extends AbstractUploader {
 
-	private static final Logger log = LoggerFactory.getLogger(MultipartFormPostWorker.class);
-
+	public static final Logger log = LoggerFactory.getLogger(MultipartFormPostUploader.class);
+	
 	private MultipartFormPost post;
+
 	private byte[] bytes;
+	
 	private String fileName;
+	
+	List<UploadStateMonitor> stateMonitors;
 
-	private List<MultipartFormPostStatusListener> statusListeners = 
-			new LinkedList<MultipartFormPostStatusListener>();
-
-	/**
-	 * @param post object to handle form post
-	 * @param bytes array of bytes to be transfered
-	 * @param fileName name of the output file where bytes should be written to
-	 */
-	public MultipartFormPostWorker(MultipartFormPost post, byte[] bytes, String fileName) {
+	
+	public MultipartFormPostUploader() {
+	}
+	
+	@Override
+	public void upload(
+			byte[] image, 
+			ImageOutputFormat format, 
+			String url,
+			String loginId, 
+			String password, 
+			UploadAbortInformer abortInformer,
+			UploadProgressMonitor progressMonitor,
+			List<UploadStateMonitor> stateMonitors) {
 		
-		this.post = post;
-		this.bytes = bytes;
-		this.fileName = fileName;
+		bytes = image;
+		fileName = new Long(System.currentTimeMillis()).toString() + "." + format;
+		this.stateMonitors = stateMonitors;
+		
+		try {
+			post = new MultipartFormPost(url);
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			Date now = new Date();
+			for(UploadStateMonitor m : stateMonitors) {
+				m.uploadError(e);
+				m.uploadFinished(now);
+			}
+		}
+		
+		post.setUserId(loginId);
+		post.setPassword(password);
+		post.setProgressListener(progressMonitor);
+		post.setKiller(abortInformer);
+		
+		execute();
 	}
 
 	@Override
@@ -88,7 +120,7 @@ public class MultipartFormPostWorker extends SwingWorker<Void, Void> {
 		try {
 			post.setParameter("filename", fileName, bytes);
 			final Date startTime = new Date();
-			for(MultipartFormPostStatusListener l : statusListeners) {
+			for(UploadStateMonitor l : stateMonitors) {
 				l.uploadStarted(startTime);
 			}
 			InputStream is = post.post(); // THIS IS WHERE DATA IS SENT TO THE SERVER
@@ -130,29 +162,24 @@ public class MultipartFormPostWorker extends SwingWorker<Void, Void> {
 				}
 				throw new IOException(serverResponseMessage);
 			} else {
-				for(MultipartFormPostStatusListener l : statusListeners)
+				for(UploadStateMonitor l : stateMonitors)
 					l.uploadSuccess(bytesReceivedByServer);
 			}
 		} catch (AbortException ae) {
-			for(MultipartFormPostStatusListener l : statusListeners)
+			for(UploadStateMonitor l : stateMonitors)
 				l.uploadAborted(ae.getBytesWritten());
 		} catch (Exception e) {
-			for(MultipartFormPostStatusListener l : statusListeners)
+			for(UploadStateMonitor l : stateMonitors)
 				l.uploadError(e);
 		}
 
 		return null;
 	}
-
+	
 	@Override
 	protected void done() {
-		log.debug("done");
 		Date doneTime = new Date();
-		for(MultipartFormPostStatusListener l : statusListeners)
+		for(UploadStateMonitor l : stateMonitors)
 			l.uploadFinished(doneTime);
-	}
-
-	public void addStatusListener(MultipartFormPostStatusListener statusListener) {
-		statusListeners.add(statusListener);
 	}
 }
