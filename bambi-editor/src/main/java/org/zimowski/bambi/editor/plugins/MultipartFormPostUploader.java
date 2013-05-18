@@ -13,19 +13,18 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zimowski.bambi.editor.config.ImageOutputFormat;
+import org.zimowski.bambi.editor.config.ConfigLoader;
 import org.zimowski.bambi.editor.formpost.AbortException;
 import org.zimowski.bambi.editor.formpost.MultipartFormPost;
-import org.zimowski.bambi.editor.plugins.api.AbstractUploader;
-import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.AbstractImageUploader;
 import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
 import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
 
 /**
- * Sends data using {@link MultipartFormPost} off an EDT thread keeping the
- * GUI responsive. Capable of processing server response according to a custom
- * protocol. Does not perform any gui drawing, but delegates these tasks via 
- * {@link UploadStateMonitor}.
+ * Sends data using {@link MultipartFormPost} off an EDT thread keeping the GUI
+ * responsive. Capable of processing server response according to a custom
+ * protocol. Does not perform any GUI drawing, but delegates these tasks via
+ * {@link UploadStateMonitor} and {@link UploadProgressMonitor}.
  * <p>
  * The spec for this protocol server response is multi-line plain text in
  * KEY|VALUE format where KEY is the message identifier which Bambi knows about
@@ -61,69 +60,58 @@ import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class MultipartFormPostUploader extends AbstractUploader {
+public class MultipartFormPostUploader extends AbstractImageUploader {
 
 	public static final Logger log = LoggerFactory.getLogger(MultipartFormPostUploader.class);
 	
-	private MultipartFormPost post;
+	/**
+	 * Name of the server side script that will receive and process the 
+	 * uploaded image. For example, if using PHP this could be something like 
+	 * processUpload.php which could perform authentication and load the 
+	 * image to a database. Requires picture prefix identifier to assemble 
+	 * full parameter name.
+	 */
+	public static final String CONFIG_SCRIPT = "processingScript";
 
-	private byte[] bytes;
-	
-	private String fileName;
-	
-	List<UploadStateMonitor> stateMonitors;
 
-	
 	public MultipartFormPostUploader() {
-	}
-	
-	@Override
-	public void upload(
-			byte[] image, 
-			ImageOutputFormat format, 
-			String url,
-			String loginId, 
-			String password, 
-			UploadAbortInformer abortInformer,
-			UploadProgressMonitor progressMonitor,
-			List<UploadStateMonitor> stateMonitors) {
-		
-		bytes = image;
-		fileName = new Long(System.currentTimeMillis()).toString() + "." + format;
-		this.stateMonitors = stateMonitors;
-		
-		try {
-			post = new MultipartFormPost(url);
-		} catch (MalformedURLException e) {
-			log.error(e.getMessage());
-			Date now = new Date();
-			for(UploadStateMonitor m : stateMonitors) {
-				m.uploadError(e);
-				m.uploadFinished(now);
-			}
-		}
-		
-		post.setUserId(loginId);
-		post.setPassword(password);
-		post.setProgressListener(progressMonitor);
-		post.setKiller(abortInformer);
-		
-		execute();
 	}
 
 	@Override
 	protected Void doInBackground() throws Exception {
 
+		String fileName = new Long(System.currentTimeMillis()).toString() + 
+				"." + uploadDef.getFormat();
 		String serverResponseMessage = null;
 		boolean xferError = false;
+		List<UploadStateMonitor> stateMonitors = uploadDef.getStateMonitors();
+
+		MultipartFormPost formPostWorker = null;
+		try {
+			String url = uploadDef.getUrl() + getRemoteScript();
+			formPostWorker = new MultipartFormPost(url);
+		} catch (MalformedURLException e) {
+			log.error(e.getMessage());
+			for (UploadStateMonitor m : stateMonitors) {
+				m.uploadError(e);
+			}
+			return null;
+		}
+
+		formPostWorker.setUserId(uploadDef.getLoginId());
+		formPostWorker.setPassword(uploadDef.getPassword());
+		formPostWorker.setProgressListener(uploadDef.getProgressMonitor());
+		formPostWorker.setKiller(uploadDef.getAbortAgent());
 
 		try {
-			post.setParameter("filename", fileName, bytes);
+			final byte[] imageBytes = uploadDef.getImageBytes();
+			formPostWorker.setParameter("filename", fileName, imageBytes);
 			final Date startTime = new Date();
-			for(UploadStateMonitor l : stateMonitors) {
+			for (UploadStateMonitor l : stateMonitors) {
 				l.uploadStarted(startTime);
 			}
-			InputStream is = post.post(); // THIS IS WHERE DATA IS SENT TO THE SERVER
+			InputStream is = formPostWorker.post(); // THIS IS WHERE DATA IS
+													// SENT TO THE SERVER
 			BufferedReader bin = new BufferedReader(new InputStreamReader(is));
 			String line = null;
 			log.info("waiting for server response...");
@@ -147,7 +135,7 @@ public class MultipartFormPostUploader extends AbstractUploader {
 				try {
 					String bytesStr = response.get("RECEIVED");
 					bytesReceivedByServer = Long.parseLong(bytesStr);
-					xferError = (bytesReceivedByServer != bytes.length);
+					xferError = (bytesReceivedByServer != imageBytes.length);
 				} catch (NumberFormatException nfe) {
 					xferError = true;
 				}
@@ -162,24 +150,22 @@ public class MultipartFormPostUploader extends AbstractUploader {
 				}
 				throw new IOException(serverResponseMessage);
 			} else {
-				for(UploadStateMonitor l : stateMonitors)
+				for (UploadStateMonitor l : stateMonitors)
 					l.uploadSuccess(bytesReceivedByServer);
 			}
 		} catch (AbortException ae) {
-			for(UploadStateMonitor l : stateMonitors)
+			for (UploadStateMonitor l : stateMonitors)
 				l.uploadAborted(ae.getBytesWritten());
 		} catch (Exception e) {
-			for(UploadStateMonitor l : stateMonitors)
+			for (UploadStateMonitor l : stateMonitors)
 				l.uploadError(e);
 		}
 
 		return null;
 	}
 	
-	@Override
-	protected void done() {
-		Date doneTime = new Date();
-		for(UploadStateMonitor l : stateMonitors)
-			l.uploadFinished(doneTime);
+	private String getRemoteScript() {
+		String key = selectorId + ConfigLoader.PARAM_SEPARATOR + CONFIG_SCRIPT;
+		return configuration.getProperty(key);
 	}
 }

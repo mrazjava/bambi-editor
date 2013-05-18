@@ -22,7 +22,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -70,6 +69,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zimowski.bambi.commons.ImageUtil;
 import org.zimowski.bambi.controls.dialog.image.ImageChooser;
 import org.zimowski.bambi.controls.dialog.login.LoginDialog;
 import org.zimowski.bambi.controls.dialog.login.LoginDialogListener;
@@ -91,7 +91,7 @@ import org.zimowski.bambi.editor.customui.statusbar.RgbCell;
 import org.zimowski.bambi.editor.customui.statusbar.StatusBar;
 import org.zimowski.bambi.editor.customui.statusbar.TextCell;
 import org.zimowski.bambi.editor.filters.ImageFilterOps;
-import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageUploadDef;
 import org.zimowski.bambi.editor.plugins.api.ImageUploader;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
@@ -1538,6 +1538,9 @@ public class Editor extends JPanel implements
 		}
 		
 		/**
+		 * Initiate the upload process. Prepare all the necessary data along 
+		 * with listeners and let the plugin roll.
+		 * 
 		 * @param loginId authentication login if required; null otherwise
 		 * @param password authentication password if required; null otherwise
 		 */
@@ -1570,8 +1573,10 @@ public class Editor extends JPanel implements
 			
 			if(config.isAuthenticationRequired()) {
 				TextEncrypter loginIdEncrypter = config.getLoginIdEncrypter();
+				loginIdEncrypter.initialize(config.getLoginIdEncrypterConfig());
 				encLoginId = loginIdEncrypter.encrypt(loginId);
 				TextEncrypter passwordEncrypter = config.getPasswordEncrypter();
+				passwordEncrypter.initialize(config.getPasswordEncrypterConfig());
 				encPassword = passwordEncrypter.encrypt(password);
 			}
 			else {
@@ -1579,31 +1584,36 @@ public class Editor extends JPanel implements
 				encPassword = password;
 			}
 			
-			String url = config.getRemoteHost() + "/" + getSubmitUrl();
+			//String url = config.getRemoteHost() + "/" + getSubmitUrl();
 			
-			List<UploadStateMonitor> stateMonitors = 
-					new LinkedList<UploadStateMonitor>();
+			List<UploadStateMonitor> stateMonitors = new LinkedList<UploadStateMonitor>();
 			stateMonitors.add(new EditorUploadStateMonitor());
 			stateMonitors.add(statusBar.getUploadCell());
 			
 			try {
-				final byte[] scaledImageBytes = bufferedImageToByteArray(scaledImage);
+				ImageOutputFormat outputFormat = getImageOutputFormat();
+				final byte[] scaledImageBytes = ImageUtil.bufferedImageToByteArray(scaledImage, outputFormat.toString());
 
 				progressBar.setMaximum(scaledImageBytes.length);
 				progressBar.setString(null);
 				progressBar.setValue(0);
 
-				ImageUploader uploader = new MultipartFormPostUploader();
-				uploader.upload(
-						scaledImageBytes, 
-						getImageOutputFormat(), 
-						url, 
-						encLoginId, 
-						encPassword, 
-						Editor.this, 
-						new EditorUploadProgressMonitor(), 
-						stateMonitors);
-					
+				ImageUploadDef uploadDef = new ImageUploadDef();
+				uploadDef.setImageBytes(scaledImageBytes);
+				uploadDef.setFormat(outputFormat);
+				uploadDef.setUrl(config.getRemoteHost());
+				uploadDef.setLoginId(encLoginId);
+				uploadDef.setPassword(encPassword);
+				uploadDef.setAbortAgent(Editor.this);
+				uploadDef.setProgressMonitor(new EditorUploadProgressMonitor());
+				uploadDef.setStateMonitors(stateMonitors);
+				
+				ImageUploader uploader = config.getImageUploader();
+				
+				uploader.initialize(config.getImageUploaderConfig());
+				uploader.setSelectorId(getSelectorId());
+				uploader.upload(uploadDef);
+
 				setUploadState(UploadState.InProgress);
 			}
 			catch(Exception e) {
@@ -1615,13 +1625,6 @@ public class Editor extends JPanel implements
 						JOptionPane.ERROR_MESSAGE
 				);
 			}			
-		}		
-
-		private byte[] bufferedImageToByteArray(BufferedImage img) throws IOException {		
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			String format = getImageOutputFormat().toString();
-			ImageIO.write(img, format, baos);
-			return baos.toByteArray();
 		}
     }
 
@@ -1734,23 +1737,16 @@ public class Editor extends JPanel implements
     	@Override
     	public void actionPerformed(ActionEvent event) {
     		
-    		if(config.isWebEnabled()) {
-    			//showUrlPageFromApplet(config.getRemoteHost() + "/" + config.getHelpPageUrl(), true);
-    			try {
-					URL url = new URL(config.getRemoteHost() + "/" + config.getHelpPageUrl());
-					Desktop.getDesktop().browse(url.toURI());
-				} catch (MalformedURLException e) {
-					log.warn(e.getMessage());
-				} catch (IOException e) {
-					log.error(e.getMessage());
-				} catch (URISyntaxException e) {
-					log.error(e.getMessage());
-				}
-    		}
-    		else {
-    			// TODO: help in stand alone mode
-    			log.info("TODO: help");
-    		}
+			try {
+				URL url = new URL(config.getHelpPageUrl());
+				Desktop.getDesktop().browse(url.toURI());
+			} catch (MalformedURLException e) {
+				log.warn(e.getMessage());
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} catch (URISyntaxException e) {
+				log.error(e.getMessage());
+			}
     	}
     }
 
@@ -1810,16 +1806,26 @@ public class Editor extends JPanel implements
 	private ImageOutputConfigFacade getIo(int picNo) {
 		return config.getPicSettings(picNo);
 	}
+	
+	/**
+	 * @return id of the selector currently in use
+	 * @throws NullPointerException radio buttons may be null if called from 
+	 * 	initialization routine
+	 */
+	private int getSelectorId() {
+		
+		if(pic1Radio.isSelected()) return 1;
+		if(pic2Radio.isSelected()) return 2;
+		if(pic3Radio.isSelected()) return 3;
+		if(pic4Radio.isSelected()) return 4;
+		
+		return 1;
+	}
 
 	@Override
 	public int getTargetWidth() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getTargetWidth();
-			if(pic2Radio.isSelected()) return getIo(2).getTargetWidth();
-			if(pic3Radio.isSelected()) return getIo(3).getTargetWidth();
-			if(pic4Radio.isSelected()) return getIo(4).getTargetWidth();
-		}
+		
+		try { getIo(getSelectorId()).getTargetWidth(); }
 		catch(NullPointerException npe) {}
 
 		return getIo(1).getTargetWidth();
@@ -1827,13 +1833,8 @@ public class Editor extends JPanel implements
 	
 	@Override
 	public int getTargetHeight() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getTargetHeight();
-			if(pic2Radio.isSelected()) return getIo(2).getTargetHeight();
-			if(pic3Radio.isSelected()) return getIo(3).getTargetHeight();
-			if(pic4Radio.isSelected()) return getIo(4).getTargetHeight();
-		}
+
+		try { getIo(getSelectorId()).getTargetHeight(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getTargetHeight();
@@ -1841,13 +1842,8 @@ public class Editor extends JPanel implements
 
 	@Override
 	public int getTargetShape() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getTargetShape();
-			if(pic2Radio.isSelected()) return getIo(2).getTargetShape();
-			if(pic3Radio.isSelected()) return getIo(3).getTargetShape();
-			if(pic4Radio.isSelected()) return getIo(4).getTargetShape();
-		}
+
+		try { getIo(getSelectorId()).getTargetShape(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getTargetShape();
@@ -1855,13 +1851,8 @@ public class Editor extends JPanel implements
 
 	@Override
 	public float getSelectorFactor() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getSelectorFactor();
-			if(pic2Radio.isSelected()) return getIo(2).getSelectorFactor();
-			if(pic3Radio.isSelected()) return getIo(3).getSelectorFactor();
-			if(pic4Radio.isSelected()) return getIo(4).getSelectorFactor();
-		}
+
+		try { getIo(getSelectorId()).getSelectorFactor(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getSelectorFactor();
@@ -1869,13 +1860,8 @@ public class Editor extends JPanel implements
 
 	@Override
 	public String getSubmitUrl() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getSubmitUrl();
-			if(pic2Radio.isSelected()) return getIo(2).getSubmitUrl();
-			if(pic3Radio.isSelected()) return getIo(3).getSubmitUrl();
-			if(pic4Radio.isSelected()) return getIo(4).getSubmitUrl();
-		}
+
+		try { getIo(getSelectorId()).getSubmitUrl(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getSubmitUrl();
@@ -1883,13 +1869,8 @@ public class Editor extends JPanel implements
 
 	@Override
 	public ImageOutputFormat getImageOutputFormat() {
-		// radio buttons may be null if called from initialization routine
-		try {
-			if(pic1Radio.isSelected()) return getIo(1).getImageOutputFormat();
-			if(pic2Radio.isSelected()) return getIo(2).getImageOutputFormat();
-			if(pic3Radio.isSelected()) return getIo(3).getImageOutputFormat();
-			if(pic4Radio.isSelected()) return getIo(4).getImageOutputFormat();
-		}
+
+		try { getIo(getSelectorId()).getImageOutputFormat(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getImageOutputFormat();

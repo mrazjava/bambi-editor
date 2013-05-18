@@ -30,7 +30,11 @@ public class BambiApp {
 	private BambiApp() {
 	}
 	
+	/**
+	 * Initializes internal GUI components and displays the main window.
+	 */
 	public void createAndShowGUI() {
+		
 		final Configuration config = ConfigManager.getInstance().getConfiguration();
 		String lookAndFeel = config.getLookAndFeel();
 		if(StringUtils.isEmpty(lookAndFeel)) {
@@ -55,6 +59,11 @@ public class BambiApp {
         win.setVisible(true);
 	}
 	
+	/**
+	 * Application entry point. This is where it all begins ..
+	 * 
+	 * @param args custom property file name/path at index 0
+	 */
 	public static void main(String[] args) {
 
 		log.info("greetings! initializing program ..");

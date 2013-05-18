@@ -3,22 +3,38 @@ package org.zimowski.bambi.editor.config;
 import java.applet.AppletContext;
 import java.io.File;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
-import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
 
 /**
+ * Responsible for reading and parsing configuration file, then making these   
+ * values accessible via {@link Configuration}.
+ * 
  * @author Adam Zimowski (mrazjava)
  */
 public class ConfigLoader implements ConfigParameters {
 	
 	private static final Logger log = LoggerFactory.getLogger(ConfigLoader.class);
 
+	/**
+	 * Separator character used to connect multiple words that make up a single 
+	 * property key.
+	 */
+	public static final String PARAM_SEPARATOR = ".";
+
+	/**
+	 * Configuration file from which settings are read.
+	 */
 	private Properties props;
 	
+	/**
+	 * Runtime configuration container used by the app.
+	 */
 	private ConfigurationImpl settings;
 	
 	
@@ -27,6 +43,11 @@ public class ConfigLoader implements ConfigParameters {
 		settings = new ConfigurationImpl();
 	}
 	
+	/**
+	 * @param context
+	 * @deprecated with no replacement; applet deployment is no longer 
+	 * 	recommended. Use Java Web Start instead
+	 */
 	public void setAppletContext(AppletContext context) {
 		settings.appletContext = context;
 	}
@@ -49,7 +70,7 @@ public class ConfigLoader implements ConfigParameters {
 	 * @return true if initialization succeeded; false on failure
 	 */
 	public boolean initializeParameters() {
-
+		
 		settings.lookAndFeel = props.getProperty(LOOK_AND_FEEL);
 		
 		String numberOfPics = props.getProperty(NUMBER_OF_PIC_OUTPUTS);
@@ -186,31 +207,41 @@ public class ConfigLoader implements ConfigParameters {
 		settings.authenticationRequired = authenticationRequired;
 		log.info("setting {} to {}", AUTH_REQUIRED, authenticationRequired);
 		
-		String loginIdEncryptClass = props.getProperty(AUTH_LOGINID_SECURITY);
-		TextEncrypter loginIdEncrypter = null;
+		String imageUploaderClass = props.getProperty(IMAGE_UPLOAD_PLUGIN);
 		try { 
-			Class<?> clazz = Class.forName(loginIdEncryptClass);
-			loginIdEncrypter = (TextEncrypter)clazz.newInstance();
-		}
-		catch(Exception e) {
-			log.warn("invalid  {} plugin {}; using default", 
-					AUTH_LOGINID_SECURITY, loginIdEncryptClass);
-			loginIdEncrypter = new ClearTextProxy();
-		}
-		settings.loginIdEncrypter = loginIdEncrypter;
-
-		String passwordEncryptClass = props.getProperty(AUTH_PASS_SECURITY);
-		TextEncrypter passwordEncrypter = null;
-		try { 
-			Class<?> clazz = Class.forName(passwordEncryptClass);
-			passwordEncrypter = (TextEncrypter)clazz.newInstance();
+			Class<?> clazz = Class.forName(imageUploaderClass);
+			clazz.newInstance(); // test
 		}
 		catch(Exception e) {
 			log.warn("invalid {} plugin {}; using default", 
-					AUTH_PASS_SECURITY, passwordEncryptClass);
-			passwordEncrypter = new ClearTextProxy();
+					IMAGE_UPLOAD_PLUGIN, imageUploaderClass);
+			imageUploaderClass = MultipartFormPostUploader.class.getCanonicalName();
 		}
-		settings.passwordEncrypter = passwordEncrypter;
+		settings.imageUploaderClass = imageUploaderClass;
+				
+		String loginIdEncryptClass = props.getProperty(AUTH_LOGINID_PLUGIN);
+		try { 
+			Class<?> clazz = Class.forName(loginIdEncryptClass);
+			clazz.newInstance();
+		}
+		catch(Exception e) {
+			log.warn("invalid {} plugin {}; using default", 
+					AUTH_LOGINID_PLUGIN, loginIdEncryptClass);
+			loginIdEncryptClass = ClearTextProxy.class.getCanonicalName();
+		}
+		settings.loginIdEncrypterClass = loginIdEncryptClass;
+
+		String passwordEncryptClass = props.getProperty(AUTH_PASS_PLUGIN);
+		try { 
+			Class<?> clazz = Class.forName(passwordEncryptClass);
+			clazz.newInstance();
+		}
+		catch(Exception e) {
+			log.warn("invalid {} plugin {}; using default", 
+					AUTH_PASS_PLUGIN, passwordEncryptClass);
+			passwordEncryptClass = ClearTextProxy.class.getCanonicalName();
+		}
+		settings.passwordEncrypterClass = passwordEncryptClass;
 		
 		String authenticationPrompt = props.getProperty(AUTH_PROMPT);
 		if(StringUtils.isNotEmpty(authenticationPrompt)) {
@@ -245,8 +276,37 @@ public class ConfigLoader implements ConfigParameters {
 		catch(NullPointerException npe) {
 			log.debug("{} disabled", AUTOLOAD_IMAGE_FILEPATH);
 		}
+
+		loadPluginConfig();
 		
 		return true;
+	}
+	
+	private void loadPluginConfig() {
+		
+		// extract custom (unknown at compile time) configuration  
+		final Set<String> keys = props.stringPropertyNames();
+		
+		for(String key : keys) {
+			if(key.contains(PARAM_SEPARATOR)) {
+				String adjustedKey = key.substring(key.indexOf(PARAM_SEPARATOR)+1);
+				if(key.startsWith(IMAGE_UPLOAD_PLUGIN)) {
+					log.debug("plugin config :: {} -----> {}", key, adjustedKey);
+					String val = props.getProperty(key);
+					settings.imageUploaderConfig.put(adjustedKey, val);
+				}
+				if(key.startsWith(AUTH_LOGINID_PLUGIN)) {
+					log.debug("plugin config :: {} -----> {}", key, adjustedKey);
+					String val = props.getProperty(key);
+					settings.loginIdEncrypterConfig.put(adjustedKey, val);
+				}
+				if(key.startsWith(AUTH_PASS_PLUGIN)) {
+					log.debug("plugin config :: {} -----> {}", key, adjustedKey);
+					String val = props.getProperty(key);
+					settings.passwordEncrypterConfig.put(adjustedKey, val);
+				}
+			}
+		}
 	}
 
 	/**
@@ -267,10 +327,8 @@ public class ConfigLoader implements ConfigParameters {
 		isValid &= initPicTargetWidthParam(picNo);
 		isValid &= initPicTargetHeightParam(picNo);
 		isValid &= initPicSelectorFactorParam(picNo);
-		isValid &= initPicSubmitUrlParam(picNo);
 		isValid &= initPicRadioLabelParam(picNo);
 		isValid &= initPicOutputFormatParam(picNo);
-		isValid &= initPicPostProcessUrl(picNo);
 
 		return isValid;
 	}
@@ -383,25 +441,6 @@ public class ConfigLoader implements ConfigParameters {
 	 * @param picNo picture number, starting with 1
 	 * @return true if validation passed and successfully initialized; false on error
 	 */
-	private boolean initPicSubmitUrlParam(int picNo) {
-		
-		final String submitUrlParam = PIC_PREFIX + picNo + PIC_SUBMIT_URL;
-		String submitUrl = props.getProperty(submitUrlParam);
-		if(StringUtils.isEmpty(submitUrl)) {
-			log.error("{} cannot be blank", submitUrlParam);
-			return false;						
-		}
-		log.info("setting {} to {}", submitUrlParam, submitUrl);
-		ImageOutputSettings ps = settings.picSettings[picNo - 1];
-		ps.submitUrl = submitUrl;
-
-		return true;
-	}
-	
-	/**
-	 * @param picNo picture number, starting with 1
-	 * @return true if validation passed and successfully initialized; false on error
-	 */
 	private boolean initPicRadioLabelParam(int picNo) {
 		
 		String radioLabelParam = PIC_PREFIX + picNo + PIC_RADIO_LABEL;
@@ -439,19 +478,6 @@ public class ConfigLoader implements ConfigParameters {
 			return false;
 		}
 
-		return true;
-	}
-	
-	private boolean initPicPostProcessUrl(int picNo) {
-		
-		@SuppressWarnings("deprecation")
-		String postProcessUrlParam = PIC_PREFIX + picNo + PIC_POST_PROCESS_URL;
-		String postProcessUrl = props.getProperty(postProcessUrlParam);
-		if(StringUtils.isNotEmpty(postProcessUrl)) {
-			log.info("seting {} to {}", postProcessUrlParam, postProcessUrl);
-			log.warn("usage of {} is deprecated and will be ignored", postProcessUrlParam);
-		}
-		
 		return true;
 	}
 }

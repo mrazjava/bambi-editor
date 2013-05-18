@@ -5,9 +5,13 @@ import java.util.Date;
 import org.zimowski.bambi.editor.formpost.AbortException;
 
 /**
- * Allows to handle different stages of the upload process.
+ * Allows to handle different stages of the upload process. Objects to 
+ * implement this are typically various GUI components that respond 
+ * accordingly.
  * 
  * @author Adam Zimowski (mrazjava)
+ * @see UploadProgressMonitor
+ * @see UploadAbortInformer
  */
 public interface UploadStateMonitor {
 

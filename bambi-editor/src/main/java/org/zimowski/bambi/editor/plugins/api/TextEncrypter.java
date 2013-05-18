@@ -1,5 +1,6 @@
 package org.zimowski.bambi.editor.plugins.api;
 
+
 /**
  * Scrambling mechanism for securing text information such as user id and 
  * password. Depending on the implementation this could be one way hash,  
@@ -7,7 +8,7 @@ package org.zimowski.bambi.editor.plugins.api;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public interface TextEncrypter {
+public interface TextEncrypter extends Plugin {
 
 	/**
 	 * Encrypts single string of text with the implementation specific 

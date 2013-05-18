@@ -7,6 +7,10 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,4 +111,19 @@ public class ImageUtil {
 	    destinationImage = op.filter(image, destinationImage);;
 	    return destinationImage;
 	}
+	
+	/**
+	 * {@link BufferedImage} to byte array conversion.
+	 * 
+	 * @param img
+	 * @param imageFormat
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] bufferedImageToByteArray(BufferedImage img, String imageFormat) throws IOException {		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ImageIO.write(img, imageFormat, baos);
+		return baos.toByteArray();
+	}
+
 }

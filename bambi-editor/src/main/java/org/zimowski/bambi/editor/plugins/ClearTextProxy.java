@@ -1,6 +1,8 @@
 package org.zimowski.bambi.editor.plugins;
 
+import org.zimowski.bambi.editor.plugins.api.AbstractPlugin;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
+
 
 /**
  * Dummy proxy encrypter which simply passes thru original text value. As a 
@@ -8,7 +10,7 @@ import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class ClearTextProxy implements TextEncrypter {
+public class ClearTextProxy extends AbstractPlugin implements TextEncrypter {
 
 	@Override
 	public String encrypt(String text) {

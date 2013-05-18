@@ -6,6 +6,8 @@ package org.zimowski.bambi.editor.plugins.api;
  * abort has been requested or issued and transfer should be halted.
  * 
  * @author Adam Zimowski (mrazjava)
+ * @see UploadProgressMonitor
+ * @see UploadStateMonitor
  */
 public interface UploadAbortInformer {
 

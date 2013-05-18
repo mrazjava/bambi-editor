@@ -1,6 +1,7 @@
 package org.zimowski.bambi.editor.plugins;
 
 import org.zimowski.bambi.commons.CryptoUtil;
+import org.zimowski.bambi.editor.plugins.api.AbstractPlugin;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -9,7 +10,7 @@ import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class MD5Digest implements TextEncrypter {
+public class MD5Digest extends AbstractPlugin implements TextEncrypter {
 
 	@Override
 	public String encrypt(String text) {

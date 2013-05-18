@@ -2,10 +2,11 @@ package org.zimowski.bambi.editor.plugins.api;
 
 /**
  * An object implementing this interface will be notified of data transfer 
- * progress. To be informed when transfer completes implmeent 
- * {@link MultipartFormPostResultListener}.
+ * progress. Typically this is a GUI component such as a progress bar.
  * 
  * @author Adam Zimowski (mrazjava)
+ * @see UploadStateMonitor
+ * @see UploadAbortInformer
  */
 public interface UploadProgressMonitor {
     

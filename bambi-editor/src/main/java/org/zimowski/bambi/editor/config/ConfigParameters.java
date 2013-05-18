@@ -1,18 +1,21 @@
 package org.zimowski.bambi.editor.config;
 
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
+import org.zimowski.bambi.editor.plugins.FtpUploader;
 import org.zimowski.bambi.editor.plugins.MD5Digest;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
 import org.zimowski.bambi.editor.plugins.RsaCipher;
 import org.zimowski.bambi.editor.plugins.SHA1Digest;
 import org.zimowski.bambi.editor.plugins.SHA256Digest;
 
 /**
- * List of valid parameters bambi can be configured with.
+ * List of valid parameters bambi can be configured with. Each parameter is 
+ * a key in the property (configuration) file.
  * 
  * @author Adam Zimwoski
  */
 public interface ConfigParameters {
-
+	
 	/**
 	 * Fully qualified class name to the look and feel UI class 
 	 * this applet should use. Optional. If not provided, default 
@@ -54,6 +57,15 @@ public interface ConfigParameters {
 	public final String NUMBER_OF_PIC_OUTPUTS = "numberOfPicOutputOptions";
 	
 	/**
+	 * Fully qualified class path to the plugin that will perform image 
+	 * upload. The default is {@link MultipartFormPostUploader}.
+	 * 
+	 * @see FtpUploader
+	 * @see MultipartFormPostUploader
+	 */
+	public final String IMAGE_UPLOAD_PLUGIN = "uploader";
+	
+	/**
 	 * true if authentication is required before image upload; false if not 
 	 * required. If authentication is required, user will be prompted for 
 	 * login id and password. Default is true.
@@ -82,7 +94,7 @@ public interface ConfigParameters {
 	 * @see SHA256Digest
 	 * 
 	 */
-	public final String AUTH_LOGINID_SECURITY = "authLoginIdSecurity";
+	public final String AUTH_LOGINID_PLUGIN = "authLoginIdSecurity";
 	
 	/**
 	 * Determines how to secure user's password id before transmission. The value 
@@ -97,7 +109,7 @@ public interface ConfigParameters {
 	 * @see SHA256Digest
 	 * 
 	 */
-	public final String AUTH_PASS_SECURITY = "authPasswordSecurity";
+	public final String AUTH_PASS_PLUGIN = "authPasswordSecurity";
 	
 	/**
 	 * Picture parameter prefix. To be followed by a number indicating 
@@ -151,12 +163,6 @@ public interface ConfigParameters {
 	 * Requires picture prefix identifier to assemble full parameter name.
 	 */
 	public final String PIC_SELECTOR_FACTOR = "SelectorFactor";
-	
-	/**
-	 * URL where processed photo should be sent to.
-	 * Requires picture prefix identifier to assemble full parameter name.
-	 */
-	public final String PIC_SUBMIT_URL = "SubmitUrl";
 	
 	/**
 	 * Text to appear next to a radio button representing this picture. 

@@ -175,11 +175,6 @@
 			<version>3.1</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-net</groupId>
-			<artifactId>commons-net</artifactId>
-			<version>20030805.205232</version>
-		</dependency>
-		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>14.0.1</version>
@@ -220,6 +215,11 @@
 			<version>5.0</version>
 			<scope>system</scope>
 			<systemPath>/usr/lib/jvm/java-7-oracle/jre/lib/javaws.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.2</version>
 		</dependency>
 	</dependencies>
 

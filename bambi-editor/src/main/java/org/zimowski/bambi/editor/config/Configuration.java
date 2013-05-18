@@ -2,7 +2,9 @@ package org.zimowski.bambi.editor.config;
 
 import java.applet.AppletContext;
 import java.io.File;
+import java.util.Properties;
 
+import org.zimowski.bambi.editor.plugins.api.ImageUploader;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -25,8 +27,16 @@ public interface Configuration {
 	public static final String APP_NAME = "BambiEditor";
 
 
+	/**
+	 * @return
+	 * @see ConfigParameters#NUMBER_OF_PIC_OUTPUTS
+	 */
 	public int getNumberOfPics();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#PIC_SELECTOR_VISIBLE
+	 */
 	public boolean isSelectorVisible();
 	
 	/**
@@ -35,23 +45,43 @@ public interface Configuration {
 	 * ruler will be hidden for the entier application's lifecycle.
 	 * 
 	 * @return true if ruler should be visible; false if hidden
+	 * @see ConfigParameters#RULER_VISIBLE
 	 */
 	public boolean isRulerVisible();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#RULER_TOGGLE_ONOFF_VISIBLE
+	 */
 	public boolean isRulerToggleVisible();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#WINDOW_WIDTH
+	 */
 	public int getWindowWidth();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#WINDOW_HEIGHT
+	 */
 	public int getWindowHeight();
 	
 	public ImageOutputSettings getPicSettings(int picNo) throws ArrayIndexOutOfBoundsException;
 	
+	/**
+	 * Full URL to the home page of the help system.
+	 * 
+	 * @return
+	 * @see ConfigParameters#HELP_PAGE_URL
+	 */
 	public String getHelpPageUrl();
 	
 	/**
 	 * URL of a remote host where image should be uploaded to.
 	 * 
 	 * @return
+	 * @see ConfigParameters#HOST
 	 */
 	public String getRemoteHost();
 	
@@ -60,6 +90,7 @@ public interface Configuration {
 	 * provided it may appear on the GUI in places such as about box.
 	 * 
 	 * @return
+	 * @see ConfigParameters#BUSINESS_NAME_LONG
 	 */
 	public String getBusinessNameLong();
 	
@@ -69,6 +100,7 @@ public interface Configuration {
 	 * integrate end user experience with your organization.
 	 * 
 	 * @return
+	 * @see ConfigParameters#BUSINESS_NAME_SHORT
 	 */
 	public String getBusinessNameShort();
 	
@@ -79,53 +111,79 @@ public interface Configuration {
 	 * manually select (open) their own file.
 	 * 
 	 * @return file to display in editor on startup; null if none
+	 * @see ConfigParameters#AUTOLOAD_IMAGE_FILEPATH
 	 */
 	public File getAutoloadImageFile();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#WINDOW_TITLE
+	 */
 	public String getWindowTitle();
 	
+	/**
+	 * @return
+	 * @see ConfigParameters#LOOK_AND_FEEL
+	 */
 	public String getLookAndFeel();
 	
 	/**
-	 * Determines if the app is running as a result of browser deployment. In 
-	 * the old days this would have been an applet, but since applet usage 
-	 * for this app has been deprecated, it would be a Java Web Start.
+	 * Returns configured image upload plugin. If not configured, default one 
+	 * is used. 
 	 * 
-	 * @return true if app is web enabled (JNLP - java web start), false if 
-	 * 	app is running in stand alone mode.
+	 * @return the plugin to handle image upload process
+	 * @see ConfigParameters#IMAGE_UPLOAD_PLUGIN
 	 */
-	public boolean isWebEnabled();
+	public ImageUploader getImageUploader();
+	
+	/**
+	 * @return plugin specific configuration
+	 */
+	public Properties getImageUploaderConfig();
 	
 	/**
 	 * Determines if user must authenticate to the server before uploading a 
 	 * photo.
 	 * 
 	 * @return true if upload athentication is required; false otherwise
+	 * @see ConfigParameters#AUTH_REQUIRED
 	 */
 	public boolean isAuthenticationRequired();
 	
 	/**
 	 * @return algorithm to use for securing login id before transmitting to 
 	 * 	the server
+	 * @see ConfigParameters#AUTH_LOGINID_PLUGIN
 	 */
 	public TextEncrypter getLoginIdEncrypter();
 	
 	/**
+	 * @return optional configuration for encrypter plugin
+	 */
+	public Properties getLoginIdEncrypterConfig();
+	
+	/**
 	 * @return algorithm to use for securing the password before transmitting 
 	 * 	to the server
+	 * @see ConfigParameters#AUTH_PASS_PLUGIN
 	 */
 	public TextEncrypter getPasswordEncrypter();
 	
 	/**
+	 * @return optional configuration for encrypter plugin
+	 */
+	public Properties getPasswordEncrypterConfig();
+	
+	/**
 	 * @return custom prompt displayed when authenticating a user
+	 * @see ConfigParameters#AUTH_PROMPT
 	 */
 	public String getAuthenticationPrompt();
 	
 	/**
 	 * @return context of this applet; null if stand alone app
 	 * @deprecated No direct replacement. This app has outgrown the applet 
-	 * 	technology and should not be packaged as applet. Use Java Web Start 
-	 * 	instead.
+	 * 	technology. Use Java Web Start instead.
 	 */
 	public AppletContext getAppletContext();
 	
@@ -137,6 +195,7 @@ public interface Configuration {
 	 * default in absence of a setting for this configuration.
 	 * 
 	 * @return
+	 * @see ConfigParameters#RADIOGROUP_OUTPUTTYPE_LABEL
 	 */
 	public String getRadioOutputTypeLabel();
 }

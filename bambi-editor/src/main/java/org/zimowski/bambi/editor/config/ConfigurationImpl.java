@@ -2,8 +2,14 @@ package org.zimowski.bambi.editor.config;
 
 import java.applet.AppletContext;
 import java.io.File;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zimowski.bambi.editor.plugins.ClearTextProxy;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageUploader;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -15,14 +21,25 @@ import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
  */
 class ConfigurationImpl implements Configuration {
 
-	//private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+	private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 	
-	final static int DEFAULT_WINDOW_WIDTH = 800; // in pixels
+	/**
+	 * Width, in pixels, applied to the window if not otherwise defined. 
+	 */
+	final static int DEFAULT_WINDOW_WIDTH = 800;
 	
-	final static int DEFAULT_WINDOW_HEIGHT = 600; // in pixels
+	/**
+	 * Height, in pixels, applied to the window if not otherwise defined. 
+	 */
+	final static int DEFAULT_WINDOW_HEIGHT = 600;
 	
 	String lookAndFeel;
 	
+	/**
+	 * we have outgrown applet technology and trying to deploy as applet would 
+	 * be suicidal (resources, etc); use Java Web Start instead.
+	 */
+	@Deprecated
 	AppletContext appletContext = null;
 	
 	boolean selectorVisible = true; // default
@@ -61,11 +78,28 @@ class ConfigurationImpl implements Configuration {
 	
 	String radioOutputTypeLabel;
 	
+	/**
+	 * Canonical name of the plugin
+	 */
+	String imageUploaderClass;
+	
+	Properties imageUploaderConfig;
+	
 	boolean authenticationRequired;
 	
-	TextEncrypter loginIdEncrypter;
+	/**
+	 * Canonical name of the plugin
+	 */
+	String loginIdEncrypterClass;
 	
-	TextEncrypter passwordEncrypter;
+	Properties loginIdEncrypterConfig;
+	
+	/**
+	 * Canonical name of the plugin
+	 */
+	String passwordEncrypterClass;
+	
+	Properties passwordEncrypterConfig;
 	
 	String authenticationPrompt = null;
 	
@@ -74,6 +108,9 @@ class ConfigurationImpl implements Configuration {
 	 * Can only be instantiated at package level
 	 */
 	ConfigurationImpl() {
+		imageUploaderConfig = new Properties();
+		loginIdEncrypterConfig = new Properties();
+		passwordEncrypterConfig = new Properties();
 	}
 
 	public int getNumberOfPics() {
@@ -127,15 +164,33 @@ class ConfigurationImpl implements Configuration {
 	
 	public String getWindowTitle() {
 		String title = StringUtils.isNotBlank(windowTitle) ? windowTitle : Configuration.APP_NAME;
-		return isWebEnabled() ? title : Configuration.APP_NAME;
+		return title;
 	}
 	
 	public String getLookAndFeel() {
 		return lookAndFeel;
 	}
 
-	public boolean isWebEnabled() {
-		return appletContext != null;
+	/**
+	 * {@inheritDoc} New instance is returned on every invocation.
+	 */
+	@Override
+	public ImageUploader getImageUploader() {
+		ImageUploader uploaderPlugin;
+		try { 
+			Class<?> clazz = Class.forName(imageUploaderClass);
+			uploaderPlugin = (ImageUploader)clazz.newInstance();
+		}
+		catch(Exception e) {
+			log.error(e.getMessage());
+			uploaderPlugin = new MultipartFormPostUploader();
+		}
+		return uploaderPlugin;
+	}
+
+	@Override
+	public Properties getImageUploaderConfig() {
+		return imageUploaderConfig;
 	}
 
 	@Override
@@ -145,12 +200,35 @@ class ConfigurationImpl implements Configuration {
 
 	@Override
 	public TextEncrypter getLoginIdEncrypter() {
-		return loginIdEncrypter;
+		return getEncrypter(loginIdEncrypterClass);
+	}
+
+	@Override
+	public Properties getLoginIdEncrypterConfig() {
+		return loginIdEncrypterConfig;
 	}
 
 	@Override
 	public TextEncrypter getPasswordEncrypter() {
-		return passwordEncrypter;
+		return getEncrypter(passwordEncrypterClass);
+	}
+
+	@Override
+	public Properties getPasswordEncrypterConfig() {
+		return passwordEncrypterConfig;
+	}
+	
+	private TextEncrypter getEncrypter(String encrypterClass) {
+		TextEncrypter encrypterPlugin;
+		try {
+			Class<?> clazz = Class.forName(encrypterClass);
+			encrypterPlugin = (TextEncrypter)clazz.newInstance();
+		}
+		catch(Exception e) {
+			log.error("failed to load {}: {}", encrypterClass, e.getMessage());
+			encrypterPlugin = new ClearTextProxy();
+		}		
+		return encrypterPlugin;
 	}
 
 	@Override
