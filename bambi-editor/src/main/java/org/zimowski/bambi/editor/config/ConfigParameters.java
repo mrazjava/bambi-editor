@@ -158,7 +158,12 @@ public interface ConfigParameters {
 	 * smaller selector, or increased to draw a larger selector. For example, 
 	 * a value of 0.5 would draw a selector half the original size. Selector 
 	 * cannot be defined in pixel size, as it has to be proportionally 
-	 * consistent with targetted output size.
+	 * consistent with targetted output size. This parameter may be deprecated 
+	 * in the future because drawing selector at reduced size caused clipped 
+	 * image be upscaled to target dimensions. It is also a rather confusing 
+	 * parameter without much added benefit from usage perspective. It is 
+	 * highly recommended to not use this parameter and let the system draw it 
+	 * at a default factor size of 1f.
 	 * 
 	 * Requires picture prefix identifier to assemble full parameter name.
 	 */

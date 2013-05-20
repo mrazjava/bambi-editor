@@ -171,7 +171,7 @@ public class ImageContainer extends ScrollableJLabel
      * {@link ImageContainer#selectorObserver} of initial size within the 
      * paint event, but may have other useful purposes in the future.
      */
-    private boolean isSelectorReset = false;
+    private boolean selectorReset = false;
     
     private Image resizeHandIcon = CustomCursors.Drag.getImage();
     
@@ -205,8 +205,6 @@ public class ImageContainer extends ScrollableJLabel
     	startingSelectorHeight = Math.round(
     			ios.getTargetHeight() * ios.getSelectorFactor()
     		);
-
-		//initSelector();
 
         //Let the user scroll by dragging to outside the window.
         setAutoscrolls(true); //enable synthetic drag events
@@ -249,7 +247,7 @@ public class ImageContainer extends ScrollableJLabel
 		Point p = getSelectorLeftUpperCorner();
 		calculateSelectorDragHandle(p.x + selectorWidth, p.y + selectorHeight);
 		
-		isSelectorReset = true;
+		selectorReset = true;
     }
     
     private void resetSelector() {
@@ -266,7 +264,7 @@ public class ImageContainer extends ScrollableJLabel
     	initSelector();
     	handleModelReset();
     	repaint();
-    	isSelectorReset = true;
+    	selectorReset = true;
     }
     
     private int getPixelColorUnderMouse(MouseEvent e) {
@@ -288,7 +286,8 @@ public class ImageContainer extends ScrollableJLabel
     		mouseInputListener.mouseMoved(e, getPixelColorUnderMouse(e));
     	}    	
 
-    	if(!isSelectorVisible) return;
+    	if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL) 
+    		return;
     	
     	if(isWithinSelector(e)) {
     		if(selectorDragHandle.contains(e.getX(), e.getY())) {
@@ -327,6 +326,9 @@ public class ImageContainer extends ScrollableJLabel
     }
     
     public void mouseDragged(MouseEvent e) {
+
+		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
+			return;
 
     	if(mouseInputListener != null) {
     		mouseInputListener.mouseDragged(e, getPixelColorUnderMouse(e));
@@ -508,8 +510,9 @@ public class ImageContainer extends ScrollableJLabel
     	if(!isSelectorVisible) return;
 
     	Point selectorPos = getSelectorLeftUpperCorner();
+    	int targetShape = ios.getTargetShape();
     	
-    	if(ios.getTargetShape() == Configuration.TARGET_SHAPE_RECT) {
+    	if(targetShape == Configuration.TARGET_SHAPE_RECT) {
     		g.setColor(Color.RED);
     		g.drawRect(selectorPos.x, selectorPos.y, selectorWidth, selectorHeight);
     		g.setColor(Color.GRAY);
@@ -517,7 +520,7 @@ public class ImageContainer extends ScrollableJLabel
     		g.setColor(Color.RED);
     		g.drawRect(selectorPos.x+2, selectorPos.y+2, selectorWidth-4, selectorHeight-4);
     	}
-    	else {
+    	else if(targetShape == Configuration.TARGET_SHAPE_ELIPSE) {
     		Graphics2D g2 = (Graphics2D)g.create();
     		// ellipse border
     		g2.setColor(Color.RED);
@@ -550,6 +553,17 @@ public class ImageContainer extends ScrollableJLabel
 
     		g2.dispose();
     	}
+    	else if(targetShape == Configuration.TARGET_SHAPE_FULL) {
+    		int imgWidth = getImage().getWidth();
+    		int imgHeight = getImage().getHeight();
+    		g.setColor(Color.RED);
+    		g.drawRect(0, 0, imgWidth-1, imgHeight-1);
+    		g.setColor(Color.GRAY);
+    		g.drawRect(1, 1, imgWidth-3, imgHeight-3);
+    		g.setColor(Color.RED);
+    		g.drawRect(2, 2, imgWidth-5, imgHeight-5);
+    		return;
+    	}
     	
     	final int x = selectorPos.x + selectorWidth;
     	final int y = selectorPos.y + selectorHeight;
@@ -570,9 +584,9 @@ public class ImageContainer extends ScrollableJLabel
     		selectorObserver.selectorMoved(selectorPos.x, selectorPos.y);
     	}
     	
-    	if(isSelectorReset) {
+    	if(selectorReset) {
     		selectorObserver.selectorResized(selectorWidth, selectorHeight);
-    		isSelectorReset = false;
+    		selectorReset = false;
     	}
     	
     	// approximate 11 pixels per character
@@ -654,10 +668,24 @@ public class ImageContainer extends ScrollableJLabel
     	
     	Point selectorPos = getSelectorLeftUpperCorner();
     	BufferedImage buffer = getImage();
-		BufferedImage subimage = buffer.getSubimage(
-				selectorPos.x, selectorPos.y, selectorWidth, selectorHeight);
-		
+    	
+    	int x, y, width, height;
+    	if(ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL) {
+    		x = 0;
+    		y = 0;
+    		width = buffer.getWidth();
+    		height = buffer.getHeight();
+    	}
+    	else {
+    		x = selectorPos.x;
+    		y = selectorPos.y;
+    		width = selectorWidth;
+    		height = selectorHeight;
+    	}
+    	
+		BufferedImage subimage = buffer.getSubimage(x, y, width, height);
 		BufferedImage result = null;
+		
 		boolean clip = 
 				(ios.getTargetShape() == Configuration.TARGET_SHAPE_ELIPSE);
 
@@ -702,7 +730,8 @@ public class ImageContainer extends ScrollableJLabel
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		
-		if(!isSelectorVisible) return;
+		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
+			return;
 		
 		if(isWithinSelector(e)) {
 		}
@@ -722,6 +751,9 @@ public class ImageContainer extends ScrollableJLabel
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+		
+		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
+			return;
 		
 		if(resizing) {
 			Cursor resizeCursor = CustomCursors.Blank.getCursor();
@@ -748,7 +780,8 @@ public class ImageContainer extends ScrollableJLabel
 	@Override
 	public void mousePressed(MouseEvent e) {
 
-		if(!isSelectorVisible) return;
+		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
+			return;
 		
 		if(e.getButton() == MouseEvent.BUTTON1 && isWithinSelector(e)) {
 			
@@ -771,7 +804,8 @@ public class ImageContainer extends ScrollableJLabel
 	@Override
 	public void mouseReleased(MouseEvent e) {
 
-		if(!isSelectorVisible) return;
+		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
+			return;
 		
 		if(e.getButton() == MouseEvent.BUTTON1) {
 

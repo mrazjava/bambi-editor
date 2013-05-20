@@ -17,9 +17,21 @@ public interface Configuration {
 
 	public final static String RESOURCE_PATH = "/org/zimowski/bambi/editor/studio/resources/";
 	
+	/**
+	 * Picture section selector will be in rectangular shape 
+	 */
 	public final static int TARGET_SHAPE_RECT = 1;
 	
+	/**
+	 * Picture section selector will be in oval shape
+	 */
 	public final static int TARGET_SHAPE_ELIPSE = 2;
+	
+	/**
+	 * Picture section selector will match the size of the photo, with scaling 
+	 * taken into account
+	 */
+	public final static int TARGET_SHAPE_FULL = 3;
 	
 	/**
 	 * application name
@@ -128,7 +140,7 @@ public interface Configuration {
 	public String getLookAndFeel();
 	
 	/**
-	 * Returns configured image upload plugin. If not configured, default one 
+	 * Returns image upload plugin. If not explicitly defined, default one 
 	 * is used. 
 	 * 
 	 * @return the plugin to handle image upload process

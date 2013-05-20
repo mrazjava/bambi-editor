@@ -345,8 +345,10 @@ public class ConfigLoader implements ConfigParameters {
 			String targetShape = props.getProperty(targetShapeParam);
 			log.info("setting {} to {}", targetShapeParam, targetShape);
 			ps.targetShape = Integer.valueOf(targetShape);
-			if(ps.targetShape < 1 || ps.targetShape > 2) {
-				log.error("{} must be either 1 (square/rectangle) or 2 (circle/elipse)", targetShapeParam);
+			if(ps.targetShape != Configuration.TARGET_SHAPE_RECT && 
+				ps.targetShape != Configuration.TARGET_SHAPE_ELIPSE && 
+				ps.targetShape != Configuration.TARGET_SHAPE_FULL) {
+				log.error("{} must be either 1 (square/rectangle), 2 (circle/elipse) or 3 (full)", targetShapeParam);
 				return false;
 			}
 		}
@@ -415,23 +417,23 @@ public class ConfigLoader implements ConfigParameters {
 	private boolean initPicSelectorFactorParam(int picNo) {
 		
 		String selectorFactorParam = PIC_PREFIX + picNo + PIC_SELECTOR_FACTOR;
+		ImageOutputSettings ps = settings.picSettings[picNo - 1];
 		try {
-			ImageOutputSettings ps = settings.picSettings[picNo - 1];
 			String selectorFactor = props.getProperty(selectorFactorParam);
 			log.info("setting {} to {}", selectorFactorParam, selectorFactor);
 			if(StringUtils.isEmpty(selectorFactor)) {
-				log.error("{} is required", selectorFactorParam);
-				return false;
+				ps.selectorFactor = 1f;
+				return true;
 			}
 			ps.selectorFactor = Float.valueOf(selectorFactor);
 			if(ps.selectorFactor <= 0F) {
-				log.error("{} must be a postivie floating point number", selectorFactorParam);
-				return false;				
+				log.error("{} is an invalid selector factor; forcing default", selectorFactorParam);
+				ps.selectorFactor = 1f;
 			}
 		}
 		catch(NumberFormatException nfe) {
-			log.error("{} must be a postivie floating point number", selectorFactorParam);
-			return false;
+			log.error("{} must be a postivie floating point number; forcing default", selectorFactorParam);
+			ps.selectorFactor = 1f;
 		}
 
 		return true;

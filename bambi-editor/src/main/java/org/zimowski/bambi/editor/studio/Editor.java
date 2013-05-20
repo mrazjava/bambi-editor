@@ -1333,6 +1333,7 @@ public class Editor extends JPanel implements
 		pic4Radio.setEnabled(visible);
 		statusBar.getSelectorPositionCell().setVisible(visible);
 		statusBar.getSelectorSizeCell().setVisible(visible);
+		uploadButton.setEnabled(visible);
 	}
 	
 	private JPanel buildPictureTypeRadioPanel() {
@@ -1557,14 +1558,22 @@ public class Editor extends JPanel implements
 					    "Clipping Error",
 					    JOptionPane.ERROR_MESSAGE);
 				return;
+			}	    	
+
+			BufferedImage scaledImage = null;
+			
+			if(getTargetShape() != Configuration.TARGET_SHAPE_FULL) {
+				// we need to do final rescale to match exact target dimensions
+				int scaleWidth = getTargetWidth();
+				int scaleHeight = getTargetHeight();
+				ScaleFilter filter = new ScaleFilter(scaleWidth, scaleHeight);
+				scaledImage = filter.filter(image, null);
+			}
+			else {
+				// no need to rescale since full view image is already scaled
+				scaledImage = image;
 			}
 
-			int scaleWidth = getTargetWidth();
-			int scaleHeight = getTargetHeight();
-	    	ScaleFilter filter = new ScaleFilter(scaleWidth, scaleHeight);
-
-			BufferedImage scaledImage = filter.filter(image, null);
-			//ImageUtil.scaleImage(aImage, scaleWidth, scaleHeight);
 			final ImageTaskCell cell = statusBar.getUploadCell();
 			final JProgressBar progressBar = cell.getProgressBar();
 			
@@ -1584,8 +1593,6 @@ public class Editor extends JPanel implements
 				encPassword = password;
 			}
 			
-			//String url = config.getRemoteHost() + "/" + getSubmitUrl();
-			
 			List<UploadStateMonitor> stateMonitors = new LinkedList<UploadStateMonitor>();
 			stateMonitors.add(new EditorUploadStateMonitor());
 			stateMonitors.add(statusBar.getUploadCell());
@@ -1597,7 +1604,8 @@ public class Editor extends JPanel implements
 				progressBar.setMaximum(scaledImageBytes.length);
 				progressBar.setString(null);
 				progressBar.setValue(0);
-
+//http://www.adfkickstart.com/facebook-user-authentication-in-java-web-application
+				// http://restfb.com/
 				ImageUploadDef uploadDef = new ImageUploadDef();
 				uploadDef.setImageBytes(scaledImageBytes);
 				uploadDef.setFormat(outputFormat);
@@ -1825,7 +1833,7 @@ public class Editor extends JPanel implements
 	@Override
 	public int getTargetWidth() {
 		
-		try { getIo(getSelectorId()).getTargetWidth(); }
+		try { return getIo(getSelectorId()).getTargetWidth(); }
 		catch(NullPointerException npe) {}
 
 		return getIo(1).getTargetWidth();
@@ -1834,7 +1842,7 @@ public class Editor extends JPanel implements
 	@Override
 	public int getTargetHeight() {
 
-		try { getIo(getSelectorId()).getTargetHeight(); }
+		try { return getIo(getSelectorId()).getTargetHeight(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getTargetHeight();
@@ -1843,7 +1851,7 @@ public class Editor extends JPanel implements
 	@Override
 	public int getTargetShape() {
 
-		try { getIo(getSelectorId()).getTargetShape(); }
+		try { return getIo(getSelectorId()).getTargetShape(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getTargetShape();
@@ -1852,7 +1860,7 @@ public class Editor extends JPanel implements
 	@Override
 	public float getSelectorFactor() {
 
-		try { getIo(getSelectorId()).getSelectorFactor(); }
+		try { return getIo(getSelectorId()).getSelectorFactor(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getSelectorFactor();
@@ -1861,7 +1869,7 @@ public class Editor extends JPanel implements
 	@Override
 	public String getSubmitUrl() {
 
-		try { getIo(getSelectorId()).getSubmitUrl(); }
+		try { return getIo(getSelectorId()).getSubmitUrl(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getSubmitUrl();
@@ -1870,7 +1878,7 @@ public class Editor extends JPanel implements
 	@Override
 	public ImageOutputFormat getImageOutputFormat() {
 
-		try { getIo(getSelectorId()).getImageOutputFormat(); }
+		try { return getIo(getSelectorId()).getImageOutputFormat(); }
 		catch(NullPointerException npe) {}
 		
 		return getIo(1).getImageOutputFormat();

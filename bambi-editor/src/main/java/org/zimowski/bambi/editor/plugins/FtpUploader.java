@@ -20,6 +20,9 @@ import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
 import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
 
 /**
+ * Image upload plugin utilizing FTP protocol. Supports basic customization 
+ * via CONFIG_* parameters.
+ * 
  * @author Adam Zimowski (mrazjava)
  */
 public class FtpUploader extends AbstractImageUploader {
