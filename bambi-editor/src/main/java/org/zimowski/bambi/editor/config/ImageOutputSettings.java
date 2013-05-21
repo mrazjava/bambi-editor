@@ -1,5 +1,7 @@
 package org.zimowski.bambi.editor.config;
 
+import org.zimowski.bambi.editor.studio.image.ImageContainer;
+
 /**
  * Defines settings for individual image output. Members are package private as 
  * they can be set directly at the time of initialization. Values are read 
@@ -20,9 +22,21 @@ public class ImageOutputSettings implements ImageOutputConfigFacade {
 	String submitUrl;
 	
 	String radioLabel;
+	
+	boolean ratioPreserved;
 
 	ImageOutputFormat format;
 
+	
+	public ImageOutputSettings() {
+		// defaults
+		ratioPreserved = false;
+		targetShape = 1;
+		targetWidth = ImageContainer.DEFAULT_SELECTOR_WIDTH;
+		targetHeight = ImageContainer.DEFAULT_SELECTOR_HEIGHT;
+		selectorFactor = 1f;
+	}
+	
 	@Override
 	public int getTargetShape() {
 		return targetShape;
@@ -50,6 +64,11 @@ public class ImageOutputSettings implements ImageOutputConfigFacade {
 
 	public String getRadioLabel() {
 		return radioLabel;
+	}
+
+	@Override
+	public boolean isRatioPreserved() {
+		return ratioPreserved;
 	}
 
 	@Override

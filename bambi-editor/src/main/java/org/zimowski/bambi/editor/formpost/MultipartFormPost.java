@@ -445,8 +445,18 @@ public class MultipartFormPost {
 		// if (_sp!=null) {
 		// _sp.statusMessage("Audio Transferred. Awaiting server response...");
 		// }
+		
 		os.close();
-		return connection.getInputStream();
+		InputStream is = null;
+		try {
+			is = connection.getInputStream();
+		}
+		catch(Exception e) {
+			log.error("can't obtain InputStream! is your target URL correct?");
+			throw e;
+		}
+		
+		return is;
 	}
 
 	/**

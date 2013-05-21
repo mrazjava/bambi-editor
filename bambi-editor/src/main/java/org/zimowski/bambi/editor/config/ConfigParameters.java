@@ -121,8 +121,11 @@ public interface ConfigParameters {
 
 	/**
 	 * Final shape. Valid values are:
-	 * 1 - SQUARE/RECTANGLE
-	 * 2 - ELIPSE/CIRCLE
+	 * <ul>
+	 * <li>{@link Configuration#TARGET_SHAPE_RECT} - SQUARE / RECTANGLE</li>
+	 * <li>{@link Configuration#TARGET_SHAPE_ELIPSE} - ELIPSE / CIRCLE</li>
+	 * <li>{@link Configuration#TARGET_SHAPE_FULL} - FULL PIC SIZE</li>
+	 * </ul>
 	 * Width and height parameters control squarness and eliptical factors. 
 	 * If width and height are the same, we get either square of circle, 
 	 * if they're different we get either rectangle of elipse.
@@ -132,14 +135,29 @@ public interface ConfigParameters {
 	public final String PIC_TARGET_SHAPE = "Shape";
 	
 	/**
+	 * Determines if resizing selector will preserve target dimension ratio. 
+	 * By default (false) ratio is not preserved, but setting this to true will 
+	 * ensure that {@link #PIC_TARGET_HEIGHT} and {@link #PIC_TARGET_WIDTH} are 
+	 * resized relative one to another. This setting is ignored if 
+	 * {@link #PIC_TARGET_SHAPE} is {@link Configuration#TARGET_SHAPE_FULL}.
+	 */
+	public final String PIC_RATIO_PRESERVED = "PreserveRatio";
+	
+	/**
 	 * Width in pixes of the final generated size, after scaling.
-	 * Requires picture prefix identifier to assemble full parameter name.
+	 * Requires picture prefix identifier to assemble full parameter name. 
+	 * This setting is ignored if {@link #PIC_TARGET_SHAPE} is 
+	 * {@link Configuration#TARGET_SHAPE_FULL} or if {@link #PIC_RATIO_PRESERVED} 
+	 * is false.
 	 */
 	public final String PIC_TARGET_WIDTH = "TargetWidth";
 	
 	/**
 	 * Height in pixes of the final generated size, after scaling. 
-	 * Requires picture prefix identifier to assemble full parameter name.
+	 * Requires picture prefix identifier to assemble full parameter name. This 
+	 * setting is ignored if {@link #PIC_TARGET_SHAPE} is 
+	 * {@link Configuration#TARGET_SHAPE_FULL} or if {@link #PIC_RATIO_PRESERVED} 
+	 * is false.
 	 */
 	public final String PIC_TARGET_HEIGHT = "TargetHeight";
 	

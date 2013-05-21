@@ -275,7 +275,7 @@ public final class EditorImageUtil {
         else if(angle < 0) {
     		int negAngle = angle;
     		angle = 360 + (negAngle % 360);
-    		log.info("negative angle {} converted to {}", negAngle, angle);
+    		log.debug("negative angle {} converted to {}", negAngle, angle);
     	}
     	
         int imgType = source.getType();

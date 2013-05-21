@@ -18,6 +18,8 @@ public interface ImageOutputConfigFacade {
 	public float getSelectorFactor();
 
 	public String getSubmitUrl();
+	
+	public boolean isRatioPreserved();
 
 	public ImageOutputFormat getImageOutputFormat();
 }

@@ -1562,7 +1562,7 @@ public class Editor extends JPanel implements
 
 			BufferedImage scaledImage = null;
 			
-			if(getTargetShape() != Configuration.TARGET_SHAPE_FULL) {
+			if(getTargetShape() != Configuration.TARGET_SHAPE_FULL && isRatioPreserved()) {
 				// we need to do final rescale to match exact target dimensions
 				int scaleWidth = getTargetWidth();
 				int scaleHeight = getTargetHeight();
@@ -1839,6 +1839,15 @@ public class Editor extends JPanel implements
 		return getIo(1).getTargetWidth();
 	}
 	
+	@Override
+	public boolean isRatioPreserved() {
+
+		try { return getIo(getSelectorId()).isRatioPreserved(); }
+		catch(NullPointerException npe) {}
+
+		return getIo(1).isRatioPreserved();
+	}
+
 	@Override
 	public int getTargetHeight() {
 

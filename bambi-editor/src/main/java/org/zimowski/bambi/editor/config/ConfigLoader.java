@@ -324,6 +324,7 @@ public class ConfigLoader implements ConfigParameters {
 		settings.picSettings[picNo - 1] = new ImageOutputSettings();
 		
 		isValid &= initPicTargetShapeParam(picNo);
+		isValid &= initPicRatioPreservedParam(picNo);
 		isValid &= initPicTargetWidthParam(picNo);
 		isValid &= initPicTargetHeightParam(picNo);
 		isValid &= initPicSelectorFactorParam(picNo);
@@ -348,7 +349,7 @@ public class ConfigLoader implements ConfigParameters {
 			if(ps.targetShape != Configuration.TARGET_SHAPE_RECT && 
 				ps.targetShape != Configuration.TARGET_SHAPE_ELIPSE && 
 				ps.targetShape != Configuration.TARGET_SHAPE_FULL) {
-				log.error("{} must be either 1 (square/rectangle), 2 (circle/elipse) or 3 (full)", targetShapeParam);
+				log.error(String.format("{} must be either %d (square/rectangle), %d (circle/elipse) or %d (full)", Configuration.TARGET_SHAPE_RECT, Configuration.TARGET_SHAPE_ELIPSE, Configuration.TARGET_SHAPE_FULL), targetShapeParam);
 				return false;
 			}
 		}
@@ -367,18 +368,27 @@ public class ConfigLoader implements ConfigParameters {
 	private boolean initPicTargetWidthParam(int picNo) {
 
 		String targetWidthParam = PIC_PREFIX + picNo + PIC_TARGET_WIDTH;
+		ImageOutputSettings ps = settings.picSettings[picNo - 1];
+		boolean ignore = ps.targetShape == Configuration.TARGET_SHAPE_FULL;
+		if(ignore) {
+			ps.targetWidth = 0;
+			return true;
+		}
+		if(!ps.ratioPreserved) {
+			return true;
+		}
 		try {
-			ImageOutputSettings ps = settings.picSettings[picNo - 1];
 			String targetWidth = props.getProperty(targetWidthParam);
 			log.info("setting {} to {}", targetWidthParam, targetWidth);
-			ps.targetWidth = Integer.valueOf(targetWidth);
-			if(ps.targetWidth <= 0) {
-				log.error("{} must be a positive number", targetWidthParam);
+			if(ps.targetWidth < 0) {
+				log.error("{} cannot be negative", targetWidthParam);
 				return false;
 			}
+			else
+				ps.targetWidth = Integer.valueOf(targetWidth);
 		}
 		catch(NumberFormatException nfe) {
-			log.error("{} must be a positive number", targetWidthParam);
+			log.error("{} must be a non-negative number", targetWidthParam);
 			return false;
 		}
 
@@ -392,19 +402,57 @@ public class ConfigLoader implements ConfigParameters {
 	private boolean initPicTargetHeightParam(int picNo) {
 
 		String targetHeightParam = PIC_PREFIX + picNo + PIC_TARGET_HEIGHT;
+		ImageOutputSettings ps = settings.picSettings[picNo - 1];
+		boolean ignore = ps.targetShape == Configuration.TARGET_SHAPE_FULL;
+		if(ignore) {
+			ps.targetHeight = 0;
+			return true;
+		}
+		if(!ps.ratioPreserved) {
+			return true;
+		}
 		try {
-			ImageOutputSettings ps = settings.picSettings[picNo - 1];
 			String targetHeight = props.getProperty(targetHeightParam);
 			log.info("setting {} to {}", PIC_TARGET_HEIGHT, targetHeight);
-			ps.targetHeight = Integer.valueOf(targetHeight);
-			if(ps.targetHeight <= 0) {
-				log.error("{} must be a positive number", targetHeightParam);
+			if(ps.targetHeight < 0) {
+				log.error("{} cannot be negative", targetHeightParam);
 				return false;				
 			}
+			else
+				ps.targetHeight = Integer.valueOf(targetHeight);
 		}
 		catch(NumberFormatException nfe) {
-			log.error("{} must be a positive number", targetHeightParam);
+			log.error("{} must be a non-negative number", targetHeightParam);
 			return false;
+		}
+
+		return true;
+	}
+	
+	/**
+	 * @param picNo picture number, starting with 1
+	 * @return true if validation passed and successfully initialized; false on error
+	 */
+	private boolean initPicRatioPreservedParam(int picNo) {
+
+		String preserveRatioParam = PIC_PREFIX + picNo + PIC_RATIO_PRESERVED;
+		ImageOutputSettings ps = settings.picSettings[picNo - 1];
+		boolean ignore = ps.targetShape == Configuration.TARGET_SHAPE_FULL;
+		if(ignore) return true;
+
+		String preserveRatio = props.getProperty(preserveRatioParam);
+		if(StringUtils.isNotBlank(preserveRatio)) {
+			if("false".equalsIgnoreCase(preserveRatio)) {
+				log.info("setting {} to {}", PIC_RATIO_PRESERVED, false);
+				ps.ratioPreserved = false;
+			}
+			else if("true".equalsIgnoreCase(preserveRatio)) {
+				log.info("setting {} to {}", PIC_RATIO_PRESERVED, true);
+				ps.ratioPreserved = true;
+			}
+			else {
+				log.warn("{} is invalid value for {}; forcing default", preserveRatio, PIC_RATIO_PRESERVED);
+			}		
 		}
 
 		return true;
@@ -420,20 +468,18 @@ public class ConfigLoader implements ConfigParameters {
 		ImageOutputSettings ps = settings.picSettings[picNo - 1];
 		try {
 			String selectorFactor = props.getProperty(selectorFactorParam);
-			log.info("setting {} to {}", selectorFactorParam, selectorFactor);
 			if(StringUtils.isEmpty(selectorFactor)) {
-				ps.selectorFactor = 1f;
 				return true;
 			}
-			ps.selectorFactor = Float.valueOf(selectorFactor);
+			log.info("setting {} to {}", selectorFactorParam, selectorFactor);
 			if(ps.selectorFactor <= 0F) {
 				log.error("{} is an invalid selector factor; forcing default", selectorFactorParam);
-				ps.selectorFactor = 1f;
 			}
+			else
+				ps.selectorFactor = Float.valueOf(selectorFactor);
 		}
 		catch(NumberFormatException nfe) {
 			log.error("{} must be a postivie floating point number; forcing default", selectorFactorParam);
-			ps.selectorFactor = 1f;
 		}
 
 		return true;

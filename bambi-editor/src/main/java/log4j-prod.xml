@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!-- 
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!                          PATTERN FORMATS GLOSSARY                           !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+! %n - newline                                                                !
+! %m - your log message                                                       !
+! %p - message priority (FATAL, ERROR, WARN, INFO, DEBUG, TRACE or custom)    !
+! %r - millisecs since program started running                                !
+! %% - percent sign in output                                                 !
+!                                                                             !
+!~~~~~~~~~~~~~~~~~~~~~~~SOME MORE CLUTTER IN YOUR LOG~~~~~~~~~~~~~~~~~~~~~~~~~!
+! %c - name of your category (logger), %c{2} will outputs last two components !
+! %t - name of current thread                                                 !
+! %x - Nested Diagnostic Context (NDC) (you supply it!)                       !
+!                                                                             !
+!~~~~~~~~~~~~~~~~~~~~~~~~~SLOW PERFORMANCE FORMATS~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+! %d - date and time, also %d{ISO8601}, %d{DATE}, %d{ABSOLUTE},               !
+!        %d{HH:mm:ss,SSS}, %d{dd MMM yyyy HH:mm:ss,SSS} and so on             !
+! %l - Shortcut for %F%L%C%M                                                  !
+! %F - Java source file name                                                  !
+! %L - Java source line number                                                !
+! %C - Java class name, %C{1} will output the last one component              !
+! %M - Java method name                                                       !
+!                                                                             !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~FORMAT MODIFIERS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+! %-any_letter_above - Left-justify in min. width (default is right-justify)  !
+! %20any_letter_above - 20 char. min. width (pad with spaces if reqd.)        !
+! %.30any_letter_above - 30 char. max. width (truncate beginning if reqd.)    !
+! %-10.10r - Example.  Left-justify time elapsed within 10-wide field.        !
+!              Truncate from beginning if wider than 10 characters.           !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+ -->
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- generic console output used for local development -->
+
+	<appender name="LOG_CONSOLE_PROD"
+		class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<param name="threshold" value="trace" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="%d{HH:mm:ss} %-5p - %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="LOG_CONSOLE_TEST"
+		class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<param name="threshold" value="trace" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="%d [%M] %-5p %c{1} (%F:%L) - %m%n" />
+		</layout>
+	</appender>
+
+	
+	<!-- log suppression -->
+	
+	<appender name="QUIET" class="org.apache.log4j.varia.NullAppender" />
+    
+	<!-- categories -->
+
+	<category name="org.zimowski.bambi" additivity="false">
+		<priority value="debug" />
+		<appender-ref ref="LOG_CONSOLE_TEST" />
+	</category>
+
+	<category name="com.jhlabs" additivity="false">
+		<priority value="debug" />
+		<appender-ref ref="LOG_CONSOLE_TEST" />
+	</category>
+
+	<root> 
+    <priority value="info" /> 
+  </root>
+
+</log4j:configuration>

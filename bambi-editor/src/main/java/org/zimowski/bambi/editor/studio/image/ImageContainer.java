@@ -79,6 +79,12 @@ public class ImageContainer extends ScrollableJLabel
 	private static final Logger log = 
 			LoggerFactory.getLogger(ImageContainer.class);
 	
+	/**
+	 * Number of pixels on each side of the edge that creates invisible buffer 
+	 * detection zone to display proper resize cursor.
+	 */
+	public static final int EDGE_CURSOR_DETECTION = 3;
+	
 	public static final int DEFAULT_CANVAS_WIDTH = 320;
 	
 	public static final int DEFAULT_CANVAS_HEIGHT = 480;
@@ -137,7 +143,7 @@ public class ImageContainer extends ScrollableJLabel
     
     private int selectorHeight = startingSelectorHeight;
     
-    private boolean resizing = false;
+    private SelectorState selectorState = SelectorState.Still;
     
     private ImageModel imageModel;
     
@@ -226,19 +232,31 @@ public class ImageContainer extends ScrollableJLabel
     }
 
     private void initSelector() {
-    	
-		log.trace("BEFORE: xSelectorPos: {}, ySelectorPos: {}", xSelectorPos, ySelectorPos);
-		log.trace("BEFORE: xSelectorScrollOffset: {}, ySelectorScrollOffset: {}", xSelectorScrollOffset, ySelectorScrollOffset);
-		log.trace("BEFORE: selectorWidth: {}, selectorHeight: {}", selectorWidth, selectorHeight);
+
+    	if(log.isTraceEnabled()) {
+			log.trace(String.format("before -> xPos: %s, yPos: %s, xScrollOffset: %s, yScrollOffset: %s, width: %s, height: %s", 
+					xSelectorPos, 
+					ySelectorPos,
+					xSelectorScrollOffset, 
+					ySelectorScrollOffset, 
+					selectorWidth,
+					selectorHeight));
+    	}
 
 		xSelectorDragOffset = ySelectorDragOffset = 0;
 
 		selectorWidth = startingSelectorWidth;
 		selectorHeight = startingSelectorHeight;
 
-		log.trace("AFTER: xSelectorPos: {}, ySelectorPos: {}", xSelectorPos, ySelectorPos);
-		log.trace("AFTER: xSelectorScrollOffset: {}, ySelectorScrollOffset: {}", xSelectorScrollOffset, ySelectorScrollOffset);
-		log.trace("AFTER: selectorWidth: {}, selectorHeight: {}", selectorWidth, selectorHeight);
+		if(log.isTraceEnabled()) {
+			log.trace(String.format("after -> xPos: %s, yPos: %s, xScrollOffset: %s, yScrollOffset: %s, width: %s, height: %s", 
+					xSelectorPos, 
+					ySelectorPos,
+					xSelectorScrollOffset, 
+					ySelectorScrollOffset, 
+					selectorWidth,
+					selectorHeight));
+		}
 
 		widthToHeightRatio = (float)selectorWidth / (float)selectorHeight;
 		
@@ -295,10 +313,16 @@ public class ImageContainer extends ScrollableJLabel
     					Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
     			setCursor(seResizeCursor);
     		}
-    		else {
-    			Cursor grabCursor = CustomCursors.Grab.getCursor();
-    			setCursor(grabCursor);
-    		}
+    		else if(!ios.isRatioPreserved() && isOverLeftEdge(e))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+    		else if(!ios.isRatioPreserved() && isOverRightEdge(e))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+    		else if(!ios.isRatioPreserved() && isOverTopEdge(e))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+    		else if(!ios.isRatioPreserved() && isOverBottomEdge(e))
+    			setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+    		else
+    			setCursor(CustomCursors.Grab.getCursor());
     	}
     	else if(isWithinCloseIcon(e)) {
     		setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -309,6 +333,123 @@ public class ImageContainer extends ScrollableJLabel
     	}
     }
     
+    /**
+     * Convenience for {@link #isOverLeftEdge(MouseEvent, boolean)} with 
+     * false passed every time.
+     * 
+     * @param e
+     * @return
+     */
+    private boolean isOverLeftEdge(MouseEvent e) {
+    	return isOverLeftEdge(e, false);
+    }
+    
+    /**
+     * Determines if cursor under mouse is currently over left edge of the 
+     * selector. The second argument, if true, automatically sets the value 
+     * of {@link #selectorState} with {@link SelectorState#DragLeftEdge}.
+     *  
+     * @param e
+     * @param setResizingFlag
+     * @return
+     */
+    private boolean isOverLeftEdge(MouseEvent e, boolean setResizingFlag) {
+    	Point p = getSelectorLeftUpperCorner();
+    	boolean result = 
+    			((e.getX() >= p.x - EDGE_CURSOR_DETECTION && e.getX() <= (p.x + EDGE_CURSOR_DETECTION)) && 
+    			(e.getY() >= p.y && e.getY() <= (p.y + selectorHeight)));
+    	if(result && setResizingFlag) selectorState = SelectorState.DragLeftEdge;
+    	return result;
+    	
+    }
+    
+    /**
+     * Convenience for {@link #isOverRightEdge(MouseEvent, boolean)} with 
+     * false passed every time.
+     * 
+     * @param e
+     * @return
+     */
+    private boolean isOverRightEdge(MouseEvent e) {
+    	return isOverRightEdge(e, false);
+    }
+    
+    /**
+     * Determines if cursor under mouse is currently over right edge of the 
+     * selector. The second argument, if true, automatically sets the value 
+     * of {@link #selectorState} with {@link SelectorState#DragRightEdge}.
+     *  
+     * @param e
+     * @param setResizingFlag
+     * @return
+     */
+    private boolean isOverRightEdge(MouseEvent e, boolean setResizingFlag) {
+    	Point p = getSelectorLeftUpperCorner();
+    	boolean result = 
+    			((e.getX() >= (p.x + selectorWidth - EDGE_CURSOR_DETECTION) && e.getX() <= (p.x + selectorWidth + EDGE_CURSOR_DETECTION)) && 
+    			(e.getY() >= p.y && e.getY() <= (p.y + selectorHeight)));
+    	if(result && setResizingFlag) selectorState = SelectorState.DragRightEdge;
+    	return result;
+    }
+    
+    /**
+     * Convenience for {@link #isOverTopEdge(MouseEvent, boolean)} with 
+     * false passed every time.
+     * 
+     * @param e
+     * @return
+     */
+    private boolean isOverTopEdge(MouseEvent e) {
+    	return isOverTopEdge(e, false);
+    }
+    
+    /**
+     * Determines if cursor under mouse is currently over top edge of the 
+     * selector. The second argument, if true, automatically sets the value 
+     * of {@link #selectorState} with {@link SelectorState#DragTopEdge}.
+     *  
+     * @param e
+     * @param setResizingFlag
+     * @return
+     */
+    private boolean isOverTopEdge(MouseEvent e, boolean setResizingFlag) {
+    	Point p = getSelectorLeftUpperCorner();
+    	boolean result = 
+    			((e.getX() >= p.x && e.getX() <= (p.x + selectorWidth)) && 
+    			(e.getY() >= p.y - EDGE_CURSOR_DETECTION && e.getY() <= (p.y + EDGE_CURSOR_DETECTION)));
+    	if(result && setResizingFlag) selectorState = SelectorState.DragTopEdge;
+    	return result;
+    }
+
+    /**
+     * Convenience for {@link #isOverBottomEdge(MouseEvent, boolean)} with 
+     * false passed every time.
+     * 
+     * @param e
+     * @return
+     */
+    private boolean isOverBottomEdge(MouseEvent e) {
+    	return isOverBottomEdge(e, false);
+    }
+    
+    /**
+     * Determines if cursor under mouse is currently over bottom edge of the 
+     * selector. The second argument, if true, automatically sets the value 
+     * of {@link #selectorState} with {@link SelectorState#DragBottomEdge}.
+     *  
+     * @param e
+     * @param setResizingFlag
+     * @return
+     */
+    private boolean isOverBottomEdge(MouseEvent e, boolean setResizingFlag) {
+    	Point p = getSelectorLeftUpperCorner();
+    	boolean result = 
+    			((e.getX() >= p.x && e.getX() <= (p.x + selectorWidth)) && 
+    			(e.getY() >= (p.y + selectorHeight - EDGE_CURSOR_DETECTION) && e.getY() <= (p.y + selectorHeight + EDGE_CURSOR_DETECTION)));
+    	if(result && setResizingFlag) selectorState = SelectorState.DragBottomEdge;
+    	return result;
+    }
+
     private boolean isWithinCloseIcon(MouseEvent e) {
     	Point p = getSelectorLeftUpperCorner();
     	p.x += selectorWidth;
@@ -335,28 +476,78 @@ public class ImageContainer extends ScrollableJLabel
     	}    	
 
     	if(xSelectorDragOffset > 0) {
-    		if(resizing) {
+    		if(isSelectorResized()) {
 
-    			int xDiff = e.getX() - prevX;
-    			int yDiff = e.getY() - prevY;
+    			final int sign = SelectorState.DragLeftEdge.equals(selectorState) || 
+    					SelectorState.DragTopEdge.equals(selectorState) ? -1 : 1;
+    			int xDiff = (e.getX() - prevX) * sign;
+    			int yDiff = (e.getY() - prevY) * sign;
     			
     			int newWidth = selectorWidth + xDiff;
     			int newHeight = selectorHeight + yDiff;
     			
-    			if(newWidth >= startingSelectorWidth && newWidth <= selectorMaxWidth) {
-    				selectorWidth = newWidth;
-    				selectorHeight = Math.round(selectorWidth / widthToHeightRatio);
-    			}
+    			if(newWidth <= 20) return;
+    			if(newHeight <= 20) return;
     			
-    			if(newHeight >= startingSelectorHeight && newHeight <= selectorMaxHeight) {
-    				selectorHeight = newHeight;
-    				selectorWidth = Math.round(selectorHeight * widthToHeightRatio);
-    			}
+    			// make sure leftcorner + width is not extended beyond pic boundary 
+    			// and if so, reduce the width; do same check for height and bottom 
+    			// pic edge
+    			Point corner = getSelectorLeftUpperCorner();
+    			final int imageWidth = getImage().getWidth();
+    			final int imageHeight = getImage().getHeight();
+    			log.trace(String.format("x: %s, y: %s, s-w: %s, s-h: %s, p-w: %s, p-h: %s", 
+    					corner.x, 
+    					corner.y,
+    					selectorWidth, 
+    					selectorHeight, 
+    					imageWidth, 
+    					imageHeight));
+    			if(corner.x + newWidth > imageWidth) return;
+    			if(corner.y + newHeight > imageHeight) return;
     			
+    			if(ios.isRatioPreserved()) {
+	    			if(newWidth >= startingSelectorWidth && newWidth <= selectorMaxWidth) {
+	    				selectorWidth = newWidth;
+	    				selectorHeight = Math.round(selectorWidth / widthToHeightRatio);
+	    			}
+	    			if(newHeight >= startingSelectorHeight && newHeight <= selectorMaxHeight) {
+	    				selectorHeight = newHeight;
+	    				selectorWidth = Math.round(selectorHeight * widthToHeightRatio);
+	    			}
+    			}
+    			else {
+    				if(isSelectorResizedHorizontally()) {
+    					selectorWidth = newWidth;
+    					boolean xOk = e.getX() > 0;
+    					if(SelectorState.DragLeftEdge.equals(selectorState) && xOk) {
+    						xSelectorPos = e.getX();
+    					}
+    				}
+    				else if(isSelectorResizedVertically()) {
+    					selectorHeight = newHeight;
+    					boolean yOk = e.getY() > 0;
+    					if(SelectorState.DragTopEdge.equals(selectorState) && yOk) {
+    						ySelectorPos = e.getY();
+    					}
+    				}
+    				else { //  if(selectorDragHandle.contains(e.getX(), e.getY()))
+	    				selectorWidth = newWidth;
+	    				selectorHeight = newHeight;
+    				}
+
+    			}
+    			log.trace(String.format("xSelectorDragOffset: %s, prevX: %s, prevY: %s, xDiff: %s, yDiff: %s, newWidth: %s, newHeight: %s", 
+    					xSelectorDragOffset, 
+    					prevX, 
+    					prevY, 
+    					xDiff, 
+    					yDiff, 
+    					newWidth, 
+    					newHeight));
     			prevX = e.getX();
     			prevY = e.getY();
     		}
-    		else { // moving
+    		else if(isSelectorMoved()) {
     			BufferedImage image = imageModel.getImage();
     			if(image == null) return;
     			int imageWidth = image.getWidth();
@@ -568,7 +759,7 @@ public class ImageContainer extends ScrollableJLabel
     	final int x = selectorPos.x + selectorWidth;
     	final int y = selectorPos.y + selectorHeight;
 
-    	g.setColor((resizing ? Color.GREEN : Color.CYAN));
+    	g.setColor((isSelectorResized() ? Color.GREEN : Color.CYAN));
     	calculateSelectorDragHandle(x, y);
     	g.fillPolygon(selectorDragHandle);
     	
@@ -576,8 +767,10 @@ public class ImageContainer extends ScrollableJLabel
     		g.drawImage(selectorCloseIcon, selectorPos.x + selectorWidth, selectorPos.y-15, null);
     	}
 
-    	if(resizing) {
-    		g.drawImage(resizeHandIcon, x-10, y-10, null);
+    	if(isSelectorResized()) {
+    		if(SelectorState.DragHandle.equals(selectorState)) {
+    			g.drawImage(resizeHandIcon, x-10, y-10, null);
+    		}
     		selectorObserver.selectorResized(selectorWidth, selectorHeight);
     	}
     	else {
@@ -702,13 +895,13 @@ public class ImageContainer extends ScrollableJLabel
 		return imageModel.getImage();    	
     }
     
-	private void previewClip(boolean scaled) {
+	private void previewClip(boolean hideSelector) {
 		
 		Frame parent = (Frame)SwingUtilities.getWindowAncestor(this);
 		
 		try {
 			BufferedImage previewImage = getClippedImage();
-			if(scaled) {
+			if(hideSelector) {
 				selectorObserver.selectorClosed();
 			}
 
@@ -751,19 +944,10 @@ public class ImageContainer extends ScrollableJLabel
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		
-		if(!isSelectorVisible || ios.getTargetShape() == Configuration.TARGET_SHAPE_FULL)
-			return;
-		
-		if(resizing) {
-			Cursor resizeCursor = CustomCursors.Blank.getCursor();
-			setCursor(resizeCursor);
-		}
-		else if(xSelectorDragOffset > 0) {
-			// selector is still dragged but user left canvas area and just 
-			// entered back
+		if(isSelectorResized() || isSelectorMoved()) {
 			Cursor dragCursor = CustomCursors.Grabbed.getCursor();
 			setCursor(dragCursor);
+			selectorState = SelectorState.Moving;
 		}
 	}
 
@@ -772,9 +956,7 @@ public class ImageContainer extends ScrollableJLabel
 		if(mouseInputListener != null) {
 			mouseInputListener.mouseExited(e);
 		}
-		if(resizing) {
-			setCursor(Cursor.getDefaultCursor());
-		}
+		setCursor(Cursor.getDefaultCursor());
 	}
 
 	@Override
@@ -790,11 +972,17 @@ public class ImageContainer extends ScrollableJLabel
 			if(selectorDragHandle.contains(e.getX(), e.getY())) {
 				prevX = e.getX();
 				prevY = e.getY();
-				resizing = true;
+				selectorState = SelectorState.DragHandle;
 				setCursor(CustomCursors.Blank.getCursor());
 				repaint();
 			}
+			else if(isOverLeftEdge(e, true) || isOverRightEdge(e, true) || isOverBottomEdge(e, true) || isOverTopEdge(e, true)) {
+				prevX = e.getX();
+				prevY = e.getY();
+				repaint();				
+			}
 			else {
+				selectorState = SelectorState.Moving;
 				Cursor grabbedCursor = CustomCursors.Grabbed.getCursor();
 				setCursor(grabbedCursor);
 			}
@@ -809,7 +997,7 @@ public class ImageContainer extends ScrollableJLabel
 		
 		if(e.getButton() == MouseEvent.BUTTON1) {
 
-			if(resizing) {/*
+			if(isSelectorResized()) {/*
 				try { // does not work in dual monitor setup
 					Point p = getSelectorLeftUpperCorner();
 					p.x += selectorWidth - 5;
@@ -820,7 +1008,7 @@ public class ImageContainer extends ScrollableJLabel
 					robot.mouseMove(p.x, p.y);
 				}
 				catch(AWTException awte) {}*/
-				resizing = false;
+				selectorState = SelectorState.Still;
 			}
 			
 			Cursor cursor;
@@ -924,5 +1112,42 @@ public class ImageContainer extends ScrollableJLabel
 			showSelectorSize = visible;
 			repaint();
 		}
+	}
+	
+	private boolean isSelectorResized() {
+		return selectorState != null && 
+				!SelectorState.Still.equals(selectorState) && 
+				!SelectorState.Moving.equals(selectorState);
+	}
+	
+	private boolean isSelectorMoved() {
+		return selectorState != null && SelectorState.Moving.equals(selectorState);
+	}
+	
+	private boolean isSelectorResizedHorizontally() {
+		return isSelectorResized() && (
+				SelectorState.DragLeftEdge.equals(selectorState) || 
+				SelectorState.DragRightEdge.equals(selectorState));
+	}
+	
+	private boolean isSelectorResizedVertically() {
+		return isSelectorResized() && (
+				SelectorState.DragTopEdge.equals(selectorState) || 
+				SelectorState.DragBottomEdge.equals(selectorState));		
+	}
+	
+	/**
+	 * Defines possible ways in which selector position can be changed.
+	 * 
+	 * @author Adam Zimowski (mrazjava)
+	 */
+	enum SelectorState {
+		Still, 
+		Moving, 
+		DragRightEdge, 
+		DragLeftEdge, 
+		DragTopEdge, 
+		DragBottomEdge, 
+		DragHandle;
 	}
 }
