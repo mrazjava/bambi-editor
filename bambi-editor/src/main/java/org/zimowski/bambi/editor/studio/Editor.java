@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.commons.ImageUtil;
 import org.zimowski.bambi.controls.dialog.image.ImageChooser;
 import org.zimowski.bambi.controls.dialog.login.LoginDialog;
-import org.zimowski.bambi.controls.dialog.login.LoginDialogListener;
+import org.zimowski.bambi.controls.dialog.login.LoginDialogAdapter;
 import org.zimowski.bambi.controls.dialog.print.PrintDialog;
 import org.zimowski.bambi.editor.ViewportMouseListener;
 import org.zimowski.bambi.editor.config.ConfigManager;
@@ -222,6 +222,18 @@ public class Editor extends JPanel implements
 	private JToolBar camToolbar;
 	
 	private JDialog loginDialog;
+	
+	/**
+	 * handler for the {@link LoginDialog} events
+	 */
+	private LoginDialogAdapter loginDialogAdapter = new LoginDialogAdapter() {		
+		@Override
+		public void cancel() {
+			super.cancel();
+			statusBar.getUploadCell().uploadAborted(0);
+			statusBar.getUploadCell().uploadFinished(new Date());
+		}
+	};
 	
     private ItemListener camStatusBarListener = new ItemListener() {
 		@Override
@@ -871,20 +883,7 @@ public class Editor extends JPanel implements
 				"Login Required", 
 				ModalityType.APPLICATION_MODAL);
 		
-		d.addLoginDialogListener(new LoginDialogListener() {
-			@Override
-			public void okay(String loginId, String password, boolean remember) {
-				log.debug("ok - {} | {}", loginId, password + " ? " + remember);
-				new UploadButtonListener().doUpload(loginId, password);
-			}
-			
-			@Override
-			public void cancel() {
-				statusBar.getUploadCell().uploadAborted(0);
-				statusBar.getUploadCell().uploadFinished(new Date());
-			}
-		});
-		
+		d.addLoginDialogListener(loginDialogAdapter);
 		d.setTitle("Login Required");
 		d.setPrompt(config.getAuthenticationPrompt());
 		String host = null;
@@ -1526,15 +1525,22 @@ public class Editor extends JPanel implements
 				abort = true;
 			}
 			else {
-				if(config.isAuthenticationRequired()) {
-					// dialog triggers upload once login collected
-					if(loginDialog == null) {
-						loginDialog = buildLoginDialog();
+				BufferedImage clippedImage = getClippedImage();
+				if(clippedImage != null) {
+					String loginId = null;
+					String password = null;
+					if(config.isAuthenticationRequired()) {
+						if(loginDialog == null) {
+							loginDialog = buildLoginDialog();
+						}
+						loginDialog.setVisible(true);
+						loginId = loginDialogAdapter.getLoginId();
+						password = loginDialogAdapter.getPassword();
 					}
-					loginDialog.setVisible(true);
+					if(!loginDialogAdapter.isCancelled()) {
+						doUpload(loginId, password, clippedImage);
+					}
 				}
-				else
-					doUpload(null, null);
 			}
 		}
 		
@@ -1544,22 +1550,17 @@ public class Editor extends JPanel implements
 		 * 
 		 * @param loginId authentication login if required; null otherwise
 		 * @param password authentication password if required; null otherwise
+		 * @param image the image - already clipped - to be exported; may be 
+		 * 	null if image could not be obtained
 		 */
-		void doUpload(String loginId, String password) {
-			abort = false;
+		void doUpload(String loginId, String password, BufferedImage image) {
 			
-			BufferedImage image = null;
-			try {
-				image = imgPanel.getSelectedImage();
-			}
-			catch(RasterFormatException rfe) {
-				JOptionPane.showMessageDialog(Editor.this,
-					    "Clipping area is out of bounds.",
-					    "Clipping Error",
-					    JOptionPane.ERROR_MESSAGE);
+			if(image == null) {
+				abort = true;
 				return;
-			}	    	
-
+			}
+			
+			abort = false;
 			BufferedImage scaledImage = null;
 			
 			if(getTargetShape() != Configuration.TARGET_SHAPE_FULL && isRatioPreserved()) {
@@ -1636,6 +1637,20 @@ public class Editor extends JPanel implements
 		}
     }
 
+    private BufferedImage getClippedImage() {
+		BufferedImage image = null;
+		try {
+			image = imgPanel.getSelectedImage();
+		}
+		catch(RasterFormatException rfe) {
+			JOptionPane.showMessageDialog(Editor.this,
+				    "Clipping area is out of bounds.",
+				    "Clipping Error",
+				    JOptionPane.ERROR_MESSAGE);
+		}
+		return image;
+    }
+    
     private void setUploadState(UploadState state) {
     	uploadState = state;
     	if(UploadState.Idle.equals(state)) {
