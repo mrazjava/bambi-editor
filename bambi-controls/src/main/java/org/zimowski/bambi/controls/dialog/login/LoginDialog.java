@@ -29,6 +29,11 @@ import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.controls.resources.dialog.login.LoginDialogIcon;
 
 /**
+ * All purpose authentication dialog that collects user id and password. It 
+ * provides two buttons, OK - which accepts the input, and CANCEL - which 
+ * aborts the dialog. A {@link LoginDialogListener} should be provided in 
+ * order to extract the values provided through the dialog.
+ * 
  * @author Adam Zimowski (mrazjava)
  */
 public class LoginDialog extends JDialog {
