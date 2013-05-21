@@ -997,24 +997,12 @@ public class ImageContainer extends ScrollableJLabel
 		
 		if(e.getButton() == MouseEvent.BUTTON1) {
 
-			if(isSelectorResized()) {/*
-				try { // does not work in dual monitor setup
-					Point p = getSelectorLeftUpperCorner();
-					p.x += selectorWidth - 5;
-					p.y += selectorHeight - 5;
-
-					Robot robot = new Robot();
-					SwingUtilities.convertPointToScreen(p, this);
-					robot.mouseMove(p.x, p.y);
-				}
-				catch(AWTException awte) {}*/
-				selectorState = SelectorState.Still;
-			}
+			if(isSelectorResized()) selectorState = SelectorState.Still;
 			
 			Cursor cursor;
 			if(selectorDragHandle.contains(e.getX(), e.getY()))
 				cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
-			else if(isWithinSelector(e))
+			else if(ios.getTargetShape() != Configuration.TARGET_SHAPE_FULL && isWithinSelector(e))
 				cursor = CustomCursors.Grab.getCursor();
 			else
 				cursor = Cursor.getDefaultCursor();
