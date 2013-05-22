@@ -8,8 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
-import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
-import org.zimowski.bambi.editor.plugins.api.ImageUploader;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageExporter;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -175,21 +175,22 @@ class ConfigurationImpl implements Configuration {
 	 * {@inheritDoc} New instance is returned on every invocation.
 	 */
 	@Override
-	public ImageUploader getImageUploader() {
-		ImageUploader uploaderPlugin;
+	public ImageExporter getImageExporter() {
+		ImageExporter uploaderPlugin;
 		try { 
 			Class<?> clazz = Class.forName(imageUploaderClass);
-			uploaderPlugin = (ImageUploader)clazz.newInstance();
+			uploaderPlugin = (ImageExporter)clazz.newInstance();
+			uploaderPlugin.initialize(getImageExporterConfig());
 		}
 		catch(Exception e) {
 			log.error(e.getMessage());
-			uploaderPlugin = new MultipartFormPostUploader();
+			uploaderPlugin = new MultipartFormPostImageUploader();
 		}
 		return uploaderPlugin;
 	}
 
 	@Override
-	public Properties getImageUploaderConfig() {
+	public Properties getImageExporterConfig() {
 		return imageUploaderConfig;
 	}
 

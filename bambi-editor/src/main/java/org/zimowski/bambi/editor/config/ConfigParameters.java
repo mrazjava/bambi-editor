@@ -1,9 +1,9 @@
 package org.zimowski.bambi.editor.config;
 
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
-import org.zimowski.bambi.editor.plugins.FtpUploader;
+import org.zimowski.bambi.editor.plugins.FtpImageUploader;
 import org.zimowski.bambi.editor.plugins.MD5Digest;
-import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
 import org.zimowski.bambi.editor.plugins.RsaCipher;
 import org.zimowski.bambi.editor.plugins.SHA1Digest;
 import org.zimowski.bambi.editor.plugins.SHA256Digest;
@@ -58,12 +58,12 @@ public interface ConfigParameters {
 	
 	/**
 	 * Fully qualified class path to the plugin that will perform image 
-	 * upload. The default is {@link MultipartFormPostUploader}.
+	 * export. The default is {@link MultipartFormPostImageUploader}.
 	 * 
-	 * @see FtpUploader
-	 * @see MultipartFormPostUploader
+	 * @see FtpImageUploader
+	 * @see MultipartFormPostImageUploader
 	 */
-	public final String IMAGE_UPLOAD_PLUGIN = "uploader";
+	public final String IMAGE_EXPORT_PLUGIN = "exporter";
 	
 	/**
 	 * true if authentication is required before image upload; false if not 

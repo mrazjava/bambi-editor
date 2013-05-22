@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.config.Configuration;
-import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportStateMonitor;
 import org.zimowski.bambi.editor.studio.eventbus.EventBusManager;
 import org.zimowski.bambi.editor.studio.eventbus.events.ImageFilterMonitorEvent;
 import org.zimowski.bambi.editor.studio.eventbus.events.ImageFilterQueueEvent;
@@ -37,7 +37,7 @@ import com.google.common.eventbus.Subscribe;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor {
+public class ImageTaskCell extends ProgressBarCell implements ExportStateMonitor {
 
 	private static final long serialVersionUID = 4456415422381527492L;
 	
@@ -49,13 +49,13 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	
 	private BufferedImage closeIcon;
 	
-	private UploadHistory lastUpload;
+	private ExportHistory lastExport;
 	
 	private String defaultText;
 	
 	private boolean showingHistory = false;
 	
-	private boolean uploadInProgress = false;
+	private boolean exportInProgress = false;
 	
 	/**
 	 * Used for the blinking effect
@@ -63,16 +63,18 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	private boolean showIcon = false;
 	
 	/**
+	 * Simple struct keeping track of recent export operations.
+	 * 
 	 * @author Adam Zimowski (mrazjava)
 	 */
-	class UploadHistory {
+	class ExportHistory {
 		private DateFormat df = new SimpleDateFormat("HH:mm:ss");
 		Date timeFinished;
 		boolean error;
 		int barValue;
 		String barMessage;
 		
-		public UploadHistory(boolean e, int v, String m) {
+		public ExportHistory(boolean e, int v, String m) {
 			error = e;
 			barValue = v;
 			barMessage = m;
@@ -195,10 +197,10 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	}
 
 	private void handleLastUploadDisplay() {
-		if(lastUpload != null) {
+		if(lastExport != null) {
 			if(showingHistory) {
-				setText(lastUpload.getBarMessageForDisplay());
-				progressBar.setValue(lastUpload.barValue);
+				setText(lastExport.getBarMessageForDisplay());
+				progressBar.setValue(lastExport.barValue);
 			}
 			else {
 				setText(defaultText);
@@ -229,46 +231,46 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	}
 
 	@Override
-	public void uploadStarted(Date when) {
+	public void exportStarted(Date when) {
 		if(redisplayDefaultTextTask != null && redisplayDefaultTextTask.isRunning()) {
 			log.debug("interrupting running thread..");
 			redisplayDefaultTextThread.interrupt();
 			redisplayDefaultTextThread = null;
 		}
-		uploadInProgress = true;
+		exportInProgress = true;
 		showingHistory = false;
 	}
 
 	@Override
-	public void uploadFinished(Date when) {
-		lastUpload.timeFinished = when;
-		uploadInProgress = false;
+	public void exportFinished(Date when) {
+		if(lastExport != null) lastExport.timeFinished = when;
+		exportInProgress = false;
 		redisplayDefaultTextThread = new Thread(redisplayDefaultTextTask);
 		redisplayDefaultTextThread.start();
 	}
 
 	@Override
-	public void uploadSuccess(long bytesReceived) {
+	public void exportSuccess(long bytesReceived) {
 		String msg = String.format("Transfer complete! %d bytes uploaded.", bytesReceived);
 		setText(msg);
 		repaint();
-		lastUpload = new UploadHistory(false, progressBar.getValue(), msg);
+		lastExport = new ExportHistory(false, progressBar.getValue(), msg);
 	}
 
 	@Override
-	public void uploadError(Exception e) {
+	public void exportError(Exception e) {
 		String msg = String.format("Transfer failed! %s", e.getMessage());
 		setText(msg);
 		repaint();
-		lastUpload = new UploadHistory(true, progressBar.getValue(), msg);
+		lastExport = new ExportHistory(true, progressBar.getValue(), msg);
 	}
 
 	@Override
-	public void uploadAborted(long bytesWritten) {
+	public void exportAborted(long bytesWritten) {
 		String msg = "Transfer aborted at user's request.";
 		setText(msg);
 		repaint();
-		lastUpload = new UploadHistory(true, progressBar.getValue(), msg);
+		lastExport = new ExportHistory(true, progressBar.getValue(), msg);
 	}
 
 	public void setDefaultText(String defaultText) {
@@ -276,9 +278,9 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	}
 	
 	private BufferedImage getUploadDisplayIcon() {
-		if(lastUpload == null) return null;
+		if(lastExport == null) return null;
 		if(!showingHistory)
-			return lastUpload.error ? uploadFailedIcon : uploadOkIcon;
+			return lastExport.error ? uploadFailedIcon : uploadOkIcon;
 		else
 			return closeIcon;
 	}
@@ -297,7 +299,7 @@ public class ImageTaskCell extends ProgressBarCell implements UploadStateMonitor
 	 * @return true if icon is currently showing; false if it is hidden
 	 */
 	private boolean isUploadIconDisplayRequired() {
-		return !uploadInProgress && lastUpload != null && showIcon;
+		return !exportInProgress && lastExport != null && showIcon;
 	}
 
 	@Override

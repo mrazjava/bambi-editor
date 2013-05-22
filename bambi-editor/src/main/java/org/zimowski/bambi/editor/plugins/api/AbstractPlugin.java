@@ -13,8 +13,9 @@ import javax.swing.SwingWorker;
  * worker facilities. To run off the EDT a plugin must define its logic inside 
  * {@link #doInBackground()} (by overriding empty implementation), plus 
  * optionally {@link #done()}, and call {@link #execute()} from main plugin 
- * interface entry point. If a plugin is not utilizing non-blocking UI thread, 
- * then it can simply implement its logic directly in its interface entry point.
+ * interface entry point. If a plugin is not utilizing non-blocking UI thread 
+ * (wants to run ON the EDT), then it should derive from {@link AbstractPluginAdapter} 
+ * instead simply implementing its logic directly in its interface entry point. 
  * 
  * @author Adam Zimowski (mrazjava)
  */
@@ -27,16 +28,5 @@ public abstract class AbstractPlugin
 	public void initialize(Properties configuration) {
 		
 		this.configuration = configuration;
-	}
-
-	/**
-	 * Convenience stub so plugins that don't want to run off the EDT don't 
-	 * have to be bothered with providing empty implementation. Does nothing.
-	 * 
-	 * @return null every time
-	 */
-	@Override
-	protected Void doInBackground() throws Exception {
-		return null;
 	}
 }

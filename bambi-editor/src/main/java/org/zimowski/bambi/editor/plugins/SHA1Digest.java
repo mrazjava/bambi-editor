@@ -1,7 +1,7 @@
 package org.zimowski.bambi.editor.plugins;
 
 import org.zimowski.bambi.commons.CryptoUtil;
-import org.zimowski.bambi.editor.plugins.api.AbstractPlugin;
+import org.zimowski.bambi.editor.plugins.api.AbstractPluginAdapter;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -10,7 +10,7 @@ import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class SHA1Digest extends AbstractPlugin implements TextEncrypter {
+public class SHA1Digest extends AbstractPluginAdapter implements TextEncrypter {
 
 	@Override
 	public String encrypt(String text) {

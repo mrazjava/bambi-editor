@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
-import org.zimowski.bambi.editor.plugins.MultipartFormPostUploader;
+import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
 
 /**
  * Responsible for reading and parsing configuration file, then making these   
@@ -207,17 +207,18 @@ public class ConfigLoader implements ConfigParameters {
 		settings.authenticationRequired = authenticationRequired;
 		log.info("setting {} to {}", AUTH_REQUIRED, authenticationRequired);
 		
-		String imageUploaderClass = props.getProperty(IMAGE_UPLOAD_PLUGIN);
+		String imageExporterClass = props.getProperty(IMAGE_EXPORT_PLUGIN);
 		try { 
-			Class<?> clazz = Class.forName(imageUploaderClass);
+			Class<?> clazz = Class.forName(imageExporterClass);
 			clazz.newInstance(); // test
 		}
 		catch(Exception e) {
-			log.warn("invalid {} plugin {}; using default", 
-					IMAGE_UPLOAD_PLUGIN, imageUploaderClass);
-			imageUploaderClass = MultipartFormPostUploader.class.getCanonicalName();
+			log.warn(String.format("invalid {} plugin {}; error: %s", e.getMessage()), 
+					IMAGE_EXPORT_PLUGIN, imageExporterClass);
+			imageExporterClass = MultipartFormPostImageUploader.class.getCanonicalName();
 		}
-		settings.imageUploaderClass = imageUploaderClass;
+		log.info("using {} for {}", imageExporterClass, IMAGE_EXPORT_PLUGIN);
+		settings.imageUploaderClass = imageExporterClass;
 				
 		String loginIdEncryptClass = props.getProperty(AUTH_LOGINID_PLUGIN);
 		try { 
@@ -290,7 +291,7 @@ public class ConfigLoader implements ConfigParameters {
 		for(String key : keys) {
 			if(key.contains(PARAM_SEPARATOR)) {
 				String adjustedKey = key.substring(key.indexOf(PARAM_SEPARATOR)+1);
-				if(key.startsWith(IMAGE_UPLOAD_PLUGIN)) {
+				if(key.startsWith(IMAGE_EXPORT_PLUGIN)) {
 					log.debug("plugin config :: {} -----> {}", key, adjustedKey);
 					String val = props.getProperty(key);
 					settings.imageUploaderConfig.put(adjustedKey, val);

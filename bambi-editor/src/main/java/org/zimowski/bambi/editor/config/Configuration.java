@@ -4,7 +4,7 @@ import java.applet.AppletContext;
 import java.io.File;
 import java.util.Properties;
 
-import org.zimowski.bambi.editor.plugins.api.ImageUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageExporter;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -140,18 +140,18 @@ public interface Configuration {
 	public String getLookAndFeel();
 	
 	/**
-	 * Returns image upload plugin. If not explicitly defined, default one 
+	 * Returns image export plugin. If not explicitly defined, default one 
 	 * is used. 
 	 * 
 	 * @return the plugin to handle image upload process
-	 * @see ConfigParameters#IMAGE_UPLOAD_PLUGIN
+	 * @see ConfigParameters#IMAGE_EXPORT_PLUGIN
 	 */
-	public ImageUploader getImageUploader();
+	public ImageExporter getImageExporter();
 	
 	/**
-	 * @return plugin specific configuration
+	 * @return plugin specific configuration for image export
 	 */
-	public Properties getImageUploaderConfig();
+	public Properties getImageExporterConfig();
 	
 	/**
 	 * Determines if user must authenticate to the server before uploading a 

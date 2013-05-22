@@ -4,29 +4,29 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A simple struct which holds objects defining and handling generic upload 
+ * A simple struct which holds objects defining and handling generic export  
  * process.
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class UploadDef {
+public class ExportDef {
 
 	private String url;	
 	private String loginId;	
 	private String password;	
-	private UploadAbortInformer abortAgent;	
-	private UploadProgressMonitor progressMonitor;	
-	private List<UploadStateMonitor> stateMonitors;
+	private ExportAbortInformer abortAgent;	
+	private ExportProgressMonitor progressMonitor;	
+	private List<ExportStateMonitor> stateMonitors;
 
 	/**
-	 * @return destination endpoint receiving the uploaded data
+	 * @return destination endpoint receiving the exported data
 	 */
 	public String getUrl() {
 		return url;
 	}
 
 	/**
-	 * @param url destination endpoint receiving the uploaded data
+	 * @param url destination endpoint receiving the exported data
 	 */
 	public void setUrl(String url) {
 		this.url = url;
@@ -67,13 +67,13 @@ public class UploadDef {
 	}
 
 	/**
-	 * @return agent that can tell if upload abort has been requested; null 
+	 * @return agent that can tell if export abort has been requested; null 
 	 * 	safe
 	 */
-	public UploadAbortInformer getAbortAgent() {
-		if(abortAgent == null) abortAgent = new UploadAbortInformer() {
+	public ExportAbortInformer getAbortAgent() {
+		if(abortAgent == null) abortAgent = new ExportAbortInformer() {
 			@Override
-			public boolean isUploadAborted() {
+			public boolean isExportAborted() {
 				return false;
 			}
 		};
@@ -81,18 +81,18 @@ public class UploadDef {
 	}
 
 	/**
-	 * @param abortAgent agent that can tell if upload abort has been requested
+	 * @param abortAgent agent that can tell if export abort has been requested
 	 */
-	public void setAbortAgent(UploadAbortInformer abortAgent) {
+	public void setAbortAgent(ExportAbortInformer abortAgent) {
 		this.abortAgent = abortAgent;
 	}
 
 	/**
-	 * @return object to which upload progress should be reported to; null 
+	 * @return object to which export progress should be reported to; null 
 	 * 	safe
 	 */
-	public UploadProgressMonitor getProgressMonitor() {
-		if(progressMonitor == null) progressMonitor = new UploadProgressMonitor() {
+	public ExportProgressMonitor getProgressMonitor() {
+		if(progressMonitor == null) progressMonitor = new ExportProgressMonitor() {
 			@Override
 			public void bytesTransferred(int bytes) {
 			}
@@ -101,25 +101,27 @@ public class UploadDef {
 	}
 
 	/**
-	 * @param progressMonitor object to which upload progress should be reported to
+	 * @param progressMonitor object to which export progress should be 
+	 * 	reported to
 	 */
-	public void setProgressMonitor(UploadProgressMonitor progressMonitor) {
+	public void setProgressMonitor(ExportProgressMonitor progressMonitor) {
 		this.progressMonitor = progressMonitor;
 	}
 
 	/**
-	 * @return objects to which state of the upload should be reported to; 
+	 * @return objects to which state of the export should be reported to; 
 	 * 	null safe
 	 */
-	public List<UploadStateMonitor> getStateMonitors() {
-		if(stateMonitors == null) stateMonitors = new LinkedList<UploadStateMonitor>();
+	public List<ExportStateMonitor> getStateMonitors() {
+		if(stateMonitors == null) stateMonitors = new LinkedList<ExportStateMonitor>();
 		return stateMonitors;
 	}
 
 	/**
-	 * @param stateMonitors objects to which state of the upload should be reported to
+	 * @param stateMonitors objects to which state of the export should be 
+	 * 	reported to
 	 */
-	public void setStateMonitors(List<UploadStateMonitor> stateMonitors) {
+	public void setStateMonitors(List<ExportStateMonitor> stateMonitors) {
 		this.stateMonitors = stateMonitors;
 	}
 }

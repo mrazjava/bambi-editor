@@ -1,14 +1,14 @@
 package org.zimowski.bambi.editor.plugins.api;
 
 /**
- * An object implementing this interface will be notified of data transfer 
+ * An object implementing this interface will be notified of data export  
  * progress. Typically this is a GUI component such as a progress bar.
  * 
  * @author Adam Zimowski (mrazjava)
- * @see UploadStateMonitor
- * @see UploadAbortInformer
+ * @see ExportStateMonitor
+ * @see ExportAbortInformer
  */
-public interface UploadProgressMonitor {
+public interface ExportProgressMonitor {
     
 	/**
 	 * Fired every time when data buffer was transferred.

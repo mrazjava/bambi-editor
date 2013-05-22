@@ -50,8 +50,8 @@ public enum ToolbarIcons {
 	Stream("stream24x24.png", CamFilterOps.None.toString()),
 	Webcam("webcam24x24.png", "Webcam"),
 	Camera("camera32x32.png", "Take Picture"),
-	Upload("upload24x24.png", "Upload selected picture to your web account"),
-	Cancel("cancel24x24.png", "Abort transfer in progress"),
+	Export("upload24x24.png", "Export Image"),
+	Cancel("cancel24x24.png", "Abort"),
 	Open("open24x24.png", "Open Image"),
 	Print("print24x24.png", "Print your creation!"),
 	Separator("vseparator8x25.png", "Sepie");

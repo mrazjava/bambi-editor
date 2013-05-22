@@ -14,10 +14,10 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zimowski.bambi.editor.plugins.api.AbstractImageUploader;
-import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
-import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
-import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
+import org.zimowski.bambi.editor.plugins.api.AbstractImageExporter;
+import org.zimowski.bambi.editor.plugins.api.ExportAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.ExportProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportStateMonitor;
 
 /**
  * Image upload plugin utilizing FTP protocol. Supports basic customization 
@@ -25,9 +25,9 @@ import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class FtpUploader extends AbstractImageUploader {
+public class FtpImageUploader extends AbstractImageExporter {
 	
-	private static final Logger log = LoggerFactory.getLogger(FtpUploader.class);
+	private static final Logger log = LoggerFactory.getLogger(FtpImageUploader.class);
 	
 	public static final String CONFIG_WORKING_DIR = "workingDir";
 	
@@ -46,7 +46,7 @@ public class FtpUploader extends AbstractImageUploader {
 	private FTPClient ftp;
 
 	
-	public FtpUploader() {
+	public FtpImageUploader() {
 		ftp = new FTPClient();
 	}
 	
@@ -54,19 +54,19 @@ public class FtpUploader extends AbstractImageUploader {
 	protected Void doInBackground() throws Exception {
 
         String fileName = new Long(System.currentTimeMillis()).toString() + 
-        		"." + uploadDef.getFormat();
-        final List<UploadStateMonitor> stateMonitors = uploadDef.getStateMonitors();
+        		"." + exportDef.getFormat();
+        final List<ExportStateMonitor> stateMonitors = exportDef.getStateMonitors();
         
 		final Date startTime = new Date();
-		for (UploadStateMonitor l : stateMonitors) {
-			l.uploadStarted(startTime);
+		for (ExportStateMonitor l : stateMonitors) {
+			l.exportStarted(startTime);
 		}
 
-		String host = new URL(uploadDef.getUrl()).getHost();
+		String host = new URL(exportDef.getUrl()).getHost();
         ftp.connect(host);
-        if(!ftp.login(uploadDef.getLoginId(), uploadDef.getPassword())) {
-    		for (UploadStateMonitor l : stateMonitors) {
-    			l.uploadError(new AuthenticationException("Invalid Login"));
+        if(!ftp.login(exportDef.getLoginId(), exportDef.getPassword())) {
+    		for (ExportStateMonitor l : stateMonitors) {
+    			l.exportError(new AuthenticationException("Invalid Login"));
     		}        	
         	return null;
         }
@@ -90,23 +90,23 @@ public class FtpUploader extends AbstractImageUploader {
         else {
         	String error = "FTP - connection failed";
         	log.error(error);
-			for(UploadStateMonitor m : stateMonitors) {
-				m.uploadError(new IOException(error));
+			for(ExportStateMonitor m : stateMonitors) {
+				m.exportError(new IOException(error));
 			}
 			return null;
         }
         
-        InputStream is = new ByteArrayInputStream(uploadDef.getImageBytes());
+        InputStream is = new ByteArrayInputStream(exportDef.getImageBytes());
         log.debug("will send {} bytes", is.available());
         
     	CountingInputStream countingIs = new CountingInputStream(is) {
 
-    		private UploadAbortInformer abortAgent;
-    		private UploadProgressMonitor progressMonitor;
+    		private ExportAbortInformer abortAgent;
+    		private ExportProgressMonitor progressMonitor;
     		
     		{
-    			abortAgent = uploadDef.getAbortAgent();
-    			progressMonitor = uploadDef.getProgressMonitor();
+    			abortAgent = exportDef.getAbortAgent();
+    			progressMonitor = exportDef.getProgressMonitor();
     		}
     		
 			@Override
@@ -114,10 +114,10 @@ public class FtpUploader extends AbstractImageUploader {
 				
 				int bytesRead = super.read(b);
 				
-				if(abortAgent.isUploadAborted()) {
+				if(abortAgent.isExportAborted()) {
 					ftp.abort();
-					for (UploadStateMonitor l : stateMonitors) {
-						l.uploadAborted(getByteCount());
+					for (ExportStateMonitor l : stateMonitors) {
+						l.exportAborted(getByteCount());
 					}
 					// TODO: delete remote file
 				}
@@ -135,12 +135,12 @@ public class FtpUploader extends AbstractImageUploader {
         if(result) {
         	long bytesSent = countingIs.getByteCount();
         	log.info("stored remote file: {} ({} bytes)", fileName.toString(), bytesSent);
-			for (UploadStateMonitor l : stateMonitors)
-				l.uploadSuccess(bytesSent);
+			for (ExportStateMonitor l : stateMonitors)
+				l.exportSuccess(bytesSent);
         }
         else {
-			for (UploadStateMonitor l : stateMonitors)
-				l.uploadError(new IOException("Upload failed due to unknown error"));        	
+			for (ExportStateMonitor l : stateMonitors)
+				l.exportError(new IOException("Upload failed due to unknown error"));        	
         }
 
         return null;

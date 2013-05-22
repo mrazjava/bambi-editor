@@ -16,15 +16,15 @@ import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.config.ConfigLoader;
 import org.zimowski.bambi.editor.formpost.AbortException;
 import org.zimowski.bambi.editor.formpost.MultipartFormPost;
-import org.zimowski.bambi.editor.plugins.api.AbstractImageUploader;
-import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
-import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
+import org.zimowski.bambi.editor.plugins.api.AbstractImageExporter;
+import org.zimowski.bambi.editor.plugins.api.ExportProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportStateMonitor;
 
 /**
  * Sends data using {@link MultipartFormPost} off an EDT thread keeping the GUI
  * responsive. Capable of processing server response according to a custom
  * protocol. Does not perform any GUI drawing, but delegates these tasks via
- * {@link UploadStateMonitor} and {@link UploadProgressMonitor}.
+ * {@link ExportStateMonitor} and {@link ExportProgressMonitor}.
  * <p>
  * The spec for this protocol server response is multi-line plain text in
  * KEY|VALUE format where KEY is the message identifier which Bambi knows about
@@ -60,9 +60,9 @@ import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class MultipartFormPostUploader extends AbstractImageUploader {
+public class MultipartFormPostImageUploader extends AbstractImageExporter {
 
-	public static final Logger log = LoggerFactory.getLogger(MultipartFormPostUploader.class);
+	public static final Logger log = LoggerFactory.getLogger(MultipartFormPostImageUploader.class);
 	
 	/**
 	 * Name of the server side script that will receive and process the 
@@ -74,41 +74,41 @@ public class MultipartFormPostUploader extends AbstractImageUploader {
 	public static final String CONFIG_SCRIPT = "processingScript";
 
 
-	public MultipartFormPostUploader() {
+	public MultipartFormPostImageUploader() {
 	}
 
 	@Override
 	protected Void doInBackground() throws Exception {
 
 		String fileName = new Long(System.currentTimeMillis()).toString() + 
-				"." + uploadDef.getFormat();
+				"." + exportDef.getFormat();
 		String serverResponseMessage = null;
 		boolean xferError = false;
-		List<UploadStateMonitor> stateMonitors = uploadDef.getStateMonitors();
+		List<ExportStateMonitor> stateMonitors = exportDef.getStateMonitors();
 
 		MultipartFormPost formPostWorker = null;
 		try {
-			String url = uploadDef.getUrl() + getRemoteScript();
+			String url = exportDef.getUrl() + getRemoteScript();
 			formPostWorker = new MultipartFormPost(url);
 		} catch (MalformedURLException e) {
 			log.error(e.getMessage());
-			for (UploadStateMonitor m : stateMonitors) {
-				m.uploadError(e);
+			for (ExportStateMonitor m : stateMonitors) {
+				m.exportError(e);
 			}
 			return null;
 		}
 
-		formPostWorker.setUserId(uploadDef.getLoginId());
-		formPostWorker.setPassword(uploadDef.getPassword());
-		formPostWorker.setProgressListener(uploadDef.getProgressMonitor());
-		formPostWorker.setKiller(uploadDef.getAbortAgent());
+		formPostWorker.setUserId(exportDef.getLoginId());
+		formPostWorker.setPassword(exportDef.getPassword());
+		formPostWorker.setProgressListener(exportDef.getProgressMonitor());
+		formPostWorker.setKiller(exportDef.getAbortAgent());
 
 		try {
-			final byte[] imageBytes = uploadDef.getImageBytes();
+			final byte[] imageBytes = exportDef.getImageBytes();
 			formPostWorker.setParameter("filename", fileName, imageBytes);
 			final Date startTime = new Date();
-			for (UploadStateMonitor l : stateMonitors) {
-				l.uploadStarted(startTime);
+			for (ExportStateMonitor l : stateMonitors) {
+				l.exportStarted(startTime);
 			}
 			InputStream is = formPostWorker.post(); // THIS IS WHERE DATA IS
 													// SENT TO THE SERVER
@@ -150,15 +150,15 @@ public class MultipartFormPostUploader extends AbstractImageUploader {
 				}
 				throw new IOException(serverResponseMessage);
 			} else {
-				for (UploadStateMonitor l : stateMonitors)
-					l.uploadSuccess(bytesReceivedByServer);
+				for (ExportStateMonitor l : stateMonitors)
+					l.exportSuccess(bytesReceivedByServer);
 			}
 		} catch (AbortException ae) {
-			for (UploadStateMonitor l : stateMonitors)
-				l.uploadAborted(ae.getBytesWritten());
+			for (ExportStateMonitor l : stateMonitors)
+				l.exportAborted(ae.getBytesWritten());
 		} catch (Exception e) {
-			for (UploadStateMonitor l : stateMonitors)
-				l.uploadError(e);
+			for (ExportStateMonitor l : stateMonitors)
+				l.exportError(e);
 		}
 
 		return null;

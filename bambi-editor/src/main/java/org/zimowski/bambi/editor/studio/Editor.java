@@ -33,6 +33,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.jnlp.BasicService;
@@ -91,12 +92,12 @@ import org.zimowski.bambi.editor.customui.statusbar.RgbCell;
 import org.zimowski.bambi.editor.customui.statusbar.StatusBar;
 import org.zimowski.bambi.editor.customui.statusbar.TextCell;
 import org.zimowski.bambi.editor.filters.ImageFilterOps;
-import org.zimowski.bambi.editor.plugins.api.ImageUploadDef;
-import org.zimowski.bambi.editor.plugins.api.ImageUploader;
+import org.zimowski.bambi.editor.plugins.api.ImageExportDef;
+import org.zimowski.bambi.editor.plugins.api.ImageExporter;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
-import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
-import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
-import org.zimowski.bambi.editor.plugins.api.UploadStateMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.ExportProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportStateMonitor;
 import org.zimowski.bambi.editor.studio.cam.CamFilterOps;
 import org.zimowski.bambi.editor.studio.cam.CamInitializationObserver;
 import org.zimowski.bambi.editor.studio.cam.CamPanel;
@@ -142,7 +143,7 @@ import com.google.common.eventbus.Subscribe;
  */
 public class Editor extends JPanel implements 
 		ItemListener, ImageOutputConfigFacade, SelectorObserver, 
-		CamInitializationObserver, FpsObserver, UploadAbortInformer, 
+		CamInitializationObserver, FpsObserver, ExportAbortInformer, 
 		WindowListener {
 
 	private static final long serialVersionUID = 628351245437307334L;
@@ -175,7 +176,7 @@ public class Editor extends JPanel implements
 	 * 
 	 * @author Adam Zimowski (mrazjava)
 	 */
-	public enum UploadState {
+	public enum ImageExportState {
 		Idle, InProgress, Aborting
 	}
 	
@@ -187,7 +188,7 @@ public class Editor extends JPanel implements
 	
 	private JRadioButton pic4Radio;
 	
-	private JButton uploadButton;
+	private JButton imageExportButton;
 	
 	private JComboBox zoomCombo;
 	
@@ -213,7 +214,7 @@ public class Editor extends JPanel implements
 	
 	private ViewportMouseListener displayImageMouseListener;
 	
-	private UploadState uploadState = UploadState.Idle;
+	private ImageExportState uploadState = ImageExportState.Idle;
 	
 	private JButton filterAbortButton;
 	
@@ -230,8 +231,8 @@ public class Editor extends JPanel implements
 		@Override
 		public void cancel() {
 			super.cancel();
-			statusBar.getUploadCell().uploadAborted(0);
-			statusBar.getUploadCell().uploadFinished(new Date());
+			statusBar.getUploadCell().exportAborted(0);
+			statusBar.getUploadCell().exportFinished(new Date());
 		}
 	};
 	
@@ -656,11 +657,11 @@ public class Editor extends JPanel implements
         bar.add(rotateRightButton);
         imageToolbarButtons.add(rotateRightButton);
         
-        uploadButton = new JButton();
-        uploadButton.addActionListener(new UploadButtonListener());
-        setUploadState(UploadState.Idle);
-        bar.add(uploadButton);
-        imageToolbarButtons.add(uploadButton);
+        imageExportButton = new JButton();
+        imageExportButton.addActionListener(new ExportButtonListener());
+        setUploadState(ImageExportState.Idle);
+        bar.add(imageExportButton);
+        imageToolbarButtons.add(imageExportButton);
 
         bar.addSeparator(new EmptyBorder(0,4,0,1));
 
@@ -1332,7 +1333,7 @@ public class Editor extends JPanel implements
 		pic4Radio.setEnabled(visible);
 		statusBar.getSelectorPositionCell().setVisible(visible);
 		statusBar.getSelectorSizeCell().setVisible(visible);
-		uploadButton.setEnabled(visible);
+		imageExportButton.setEnabled(visible);
 	}
 	
 	private JPanel buildPictureTypeRadioPanel() {
@@ -1466,15 +1467,15 @@ public class Editor extends JPanel implements
      * 
      * @author Adam Zimowski (mrazjava)
      */
-    class EditorUploadStateMonitor implements UploadStateMonitor {
+    class EditorUploadStateMonitor implements ExportStateMonitor {
 		
 		@Override
-		public void uploadSuccess(long bytesReceived) {
+		public void exportSuccess(long bytesReceived) {
 		}
 
 		@Override
-		public void uploadError(final Exception e) {
-			if (!UploadState.Aborting.equals(uploadState)) {
+		public void exportError(final Exception e) {
+			if (!ImageExportState.Aborting.equals(uploadState)) {
 				// legit error
 				log.error(e.getMessage());
 				SwingUtilities.invokeLater(new Runnable() {
@@ -1488,16 +1489,16 @@ public class Editor extends JPanel implements
 		}
 
 		@Override
-		public void uploadAborted(long bytesWritten) {
+		public void exportAborted(long bytesWritten) {
 		}
 
 		@Override
-		public void uploadFinished(Date when) {
-			setUploadState(UploadState.Idle);
+		public void exportFinished(Date when) {
+			setUploadState(ImageExportState.Idle);
 		}
 
 		@Override
-		public void uploadStarted(Date when) {
+		public void exportStarted(Date when) {
 		}
     }
     
@@ -1507,7 +1508,7 @@ public class Editor extends JPanel implements
      * 
      * @author Adam Zimowski
      */
-    class UploadButtonListener implements ActionListener {
+    class ExportButtonListener implements ActionListener {
     	
     	/**
     	 * Handles Upload/Abort action which is assigned to the same button. 
@@ -1520,8 +1521,8 @@ public class Editor extends JPanel implements
     	 */
 		@Override
 		public void actionPerformed(ActionEvent event) {
-			if(UploadState.InProgress.equals(uploadState)) {
-				uploadState = UploadState.Aborting;
+			if(ImageExportState.InProgress.equals(uploadState)) {
+				uploadState = ImageExportState.Aborting;
 				abort = true;
 			}
 			else {
@@ -1538,14 +1539,14 @@ public class Editor extends JPanel implements
 						password = loginDialogAdapter.getPassword();
 					}
 					if(!loginDialogAdapter.isCancelled()) {
-						doUpload(loginId, password, clippedImage);
+						exportImage(loginId, password, clippedImage);
 					}
 				}
 			}
 		}
 		
 		/**
-		 * Initiate the upload process. Prepare all the necessary data along 
+		 * Initiate the export process. Prepare all the necessary data along 
 		 * with listeners and let the plugin roll.
 		 * 
 		 * @param loginId authentication login if required; null otherwise
@@ -1553,7 +1554,7 @@ public class Editor extends JPanel implements
 		 * @param image the image - already clipped - to be exported; may be 
 		 * 	null if image could not be obtained
 		 */
-		void doUpload(String loginId, String password, BufferedImage image) {
+		void exportImage(String loginId, String password, BufferedImage image) {
 			
 			if(image == null) {
 				abort = true;
@@ -1594,7 +1595,7 @@ public class Editor extends JPanel implements
 				encPassword = password;
 			}
 			
-			List<UploadStateMonitor> stateMonitors = new LinkedList<UploadStateMonitor>();
+			List<ExportStateMonitor> stateMonitors = new LinkedList<ExportStateMonitor>();
 			stateMonitors.add(new EditorUploadStateMonitor());
 			stateMonitors.add(statusBar.getUploadCell());
 			
@@ -1605,25 +1606,23 @@ public class Editor extends JPanel implements
 				progressBar.setMaximum(scaledImageBytes.length);
 				progressBar.setString(null);
 				progressBar.setValue(0);
-//http://www.adfkickstart.com/facebook-user-authentication-in-java-web-application
-				// http://restfb.com/
-				ImageUploadDef uploadDef = new ImageUploadDef();
-				uploadDef.setImageBytes(scaledImageBytes);
-				uploadDef.setFormat(outputFormat);
-				uploadDef.setUrl(config.getRemoteHost());
-				uploadDef.setLoginId(encLoginId);
-				uploadDef.setPassword(encPassword);
-				uploadDef.setAbortAgent(Editor.this);
-				uploadDef.setProgressMonitor(new EditorUploadProgressMonitor());
-				uploadDef.setStateMonitors(stateMonitors);
-				
-				ImageUploader uploader = config.getImageUploader();
-				
-				uploader.initialize(config.getImageUploaderConfig());
-				uploader.setSelectorId(getSelectorId());
-				uploader.upload(uploadDef);
 
-				setUploadState(UploadState.InProgress);
+				ImageExportDef imgExportDef = new ImageExportDef();
+				imgExportDef.setImageBytes(scaledImageBytes);
+				imgExportDef.setFormat(outputFormat);
+				imgExportDef.setUrl(config.getRemoteHost());
+				imgExportDef.setLoginId(encLoginId);
+				imgExportDef.setPassword(encPassword);
+				imgExportDef.setAbortAgent(Editor.this);
+				imgExportDef.setProgressMonitor(new EditorUploadProgressMonitor());
+				imgExportDef.setStateMonitors(stateMonitors);
+				
+				ImageExporter imgExporter = config.getImageExporter();
+
+				imgExporter.setSelectorId(getSelectorId());
+				imgExporter.export(imgExportDef, Editor.this.getTopLevelAncestor());
+
+				setUploadState(ImageExportState.InProgress);
 			}
 			catch(Exception e) {
 				// should not happen but plugins, like kids, could mis-behave
@@ -1651,15 +1650,16 @@ public class Editor extends JPanel implements
 		return image;
     }
     
-    private void setUploadState(UploadState state) {
+    private void setUploadState(ImageExportState state) {
     	uploadState = state;
-    	if(UploadState.Idle.equals(state)) {
-    		uploadButton.setToolTipText(ToolbarIcons.Upload.getDescription());
-    		uploadButton.setIcon(ToolbarIcons.Upload.getIcon());
+    	ImageExporter imageExporter = config.getImageExporter();
+    	if(ImageExportState.Idle.equals(state)) {
+    		imageExportButton.setToolTipText(imageExporter.getTooltip(Locale.ENGLISH));
+    		imageExportButton.setIcon(ToolbarIcons.Export.getIcon());
     	}
-    	else if(UploadState.InProgress.equals(state)) {
-    		uploadButton.setToolTipText(ToolbarIcons.Cancel.getDescription());
-    		uploadButton.setIcon(ToolbarIcons.Cancel.getIcon());
+    	else if(ImageExportState.InProgress.equals(state)) {
+    		imageExportButton.setToolTipText(ToolbarIcons.Cancel.getDescription());
+    		imageExportButton.setIcon(ToolbarIcons.Cancel.getIcon());
     	}
     	else
     		log.warn("Invalid upload state: {}", state);
@@ -1816,7 +1816,7 @@ public class Editor extends JPanel implements
     }
     
 	@Override
-	public boolean isUploadAborted() {
+	public boolean isExportAborted() {
 		return abort;
 	}
 	
@@ -2141,7 +2141,7 @@ public class Editor extends JPanel implements
 	 * 
 	 * @author Adam Zimowski (mrazjava)
 	 */
-	class EditorUploadProgressMonitor implements UploadProgressMonitor {
+	class EditorUploadProgressMonitor implements ExportProgressMonitor {
 		@Override
 		public void bytesTransferred(final int bytes) {
         	ProgressBarCell cell = statusBar.getUploadCell();

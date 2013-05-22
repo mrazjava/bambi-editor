@@ -16,7 +16,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.commons.RsaKeyGenerator;
-import org.zimowski.bambi.editor.plugins.api.AbstractPlugin;
+import org.zimowski.bambi.editor.plugins.api.AbstractPluginAdapter;
 import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 
 /**
@@ -28,7 +28,7 @@ import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class RsaCipher extends AbstractPlugin implements TextEncrypter {
+public class RsaCipher extends AbstractPluginAdapter implements TextEncrypter {
 	
 	private static final Logger log = LoggerFactory.getLogger(RsaCipher.class);
 	

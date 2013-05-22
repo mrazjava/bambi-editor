@@ -17,8 +17,8 @@ import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zimowski.bambi.editor.plugins.api.UploadAbortInformer;
-import org.zimowski.bambi.editor.plugins.api.UploadProgressMonitor;
+import org.zimowski.bambi.editor.plugins.api.ExportAbortInformer;
+import org.zimowski.bambi.editor.plugins.api.ExportProgressMonitor;
 
 /**
  * Helps to send POST HTTP requests with various form data and also allows 
@@ -44,9 +44,9 @@ public class MultipartFormPost {
 	
 	private Map<String, String> cookies = new HashMap<String, String>();
 	
-	private UploadProgressMonitor progressListener = null;
+	private ExportProgressMonitor progressListener = null;
 	
-	private UploadAbortInformer killer = null;
+	private ExportAbortInformer killer = null;
 	
 	private StringBuffer cookieList = new StringBuffer();
 	
@@ -158,7 +158,7 @@ public class MultipartFormPost {
 	 * 
 	 * @param progressListener progress callback
 	 */
-	public void setProgressListener(UploadProgressMonitor progressListener) {
+	public void setProgressListener(ExportProgressMonitor progressListener) {
 		this.progressListener = progressListener;
 	}
 
@@ -167,7 +167,7 @@ public class MultipartFormPost {
 	 * 
 	 * @param killer
 	 */
-	public void setKiller(UploadAbortInformer killer) {
+	public void setKiller(ExportAbortInformer killer) {
 		this.killer = killer;
 	}
 
@@ -277,7 +277,7 @@ public class MultipartFormPost {
 
 		synchronized(in) {
 			while((nread = in.read(buf, 0, buf.length)) > 0) {
-				if(killer != null && killer.isUploadAborted()) {
+				if(killer != null && killer.isExportAborted()) {
 					if(!inner) {
 						log.debug("aborting! processed {} bytes", total);
 						throw new AbortException(total);

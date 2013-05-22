@@ -18,7 +18,7 @@ public interface Plugin {
 	 * configuration is custom defined (cannot be known at compile time), it 
 	 * must follow specific naming convention in order to be properly loaded.  
 	 * Plugin setting must begin with the name of the plugin setting itself,  
-	 * followed by a separator. For example, the {@link ConfigParameters#IMAGE_UPLOAD_PLUGIN} 
+	 * followed by a separator. For example, the {@link ConfigParameters#IMAGE_EXPORT_PLUGIN} 
 	 * is used to define the image upload strategy by specifying plugin's full 
 	 * class path. Configuration settings for that plugin can be named freely 
 	 * but must be prefixed with the plugin setting itself followed by 
