@@ -7,6 +7,7 @@ import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
 import org.zimowski.bambi.editor.plugins.RsaCipher;
 import org.zimowski.bambi.editor.plugins.SHA1Digest;
 import org.zimowski.bambi.editor.plugins.SHA256Digest;
+import org.zimowski.bambi.editor.studio.WelcomePanel;
 
 /**
  * List of valid parameters bambi can be configured with. Each parameter is 
@@ -22,6 +23,22 @@ public interface ConfigParameters {
 	 * Java look and feel is used.
 	 */
 	public final String LOOK_AND_FEEL = "lookAndFeel";
+	
+	/**
+	 * URL to welcome file that will be displayed upon application startup 
+	 * inside the {@link WelcomePanel}. If not provided or invalid, 
+	 * application will attempt to display {@link #WELCOME_RESOURCE_PATH} 
+	 * instead.
+	 */
+	public final String WELCOME_URL = "welcomeUrl";
+	
+	/**
+	 * Local resource path to file application should display on startup. This 
+	 * setting is ignored if {@link #WELCOME_URL} is provided and correct. If 
+	 * this value is not provided or is incorrect, {@link WelcomePanel} is 
+	 * displayed empty.
+	 */
+	public final String WELCOME_RESOURCE_PATH = "welcomeResourcePath";
 	
 	/**
 	 * true if ruler should be shown; false if it should be hidden. Default 

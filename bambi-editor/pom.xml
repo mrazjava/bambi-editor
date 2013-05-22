@@ -34,7 +34,6 @@
 							<exclude>**/*.properties</exclude>
 							<exclude>/log4j.xml</exclude>
 							<exclude>**/*.v7</exclude>
-							<exclude>me2.JPG</exclude>
 						</excludes>
 					</resource>
 				</resources>
@@ -75,9 +74,14 @@
 							<include>**/*</include>
 						</includes>
 						<excludes>
-							<exclude>me2.JPG</exclude>
 							<exclude>**/*.v7l</exclude>
+						</excludes>
+					</resource>
+					<resource>
+						<directory>src/main/resources/</directory>
+						<excludes>
 							<exclude>bambi.properties</exclude>
+							<exclude>log4j*.xml</exclude>
 						</excludes>
 					</resource>
 				</resources>

@@ -22,6 +22,15 @@ public class ConfigManager {
 		this.configuration = configuration;
 	}
 	
+	/**
+	 * Retrieves configuration for the proper instance of the app, weather 
+	 * deployed stand-alone to desktop, or via Java Web Start. Retrieving 
+	 * configuration via this getter always guarantees properly bound settings 
+	 * to classloader instance (which is particularly important in browser 
+	 * deployment).
+	 * 
+	 * @return configuration settings for this instance of the application
+	 */
 	public Configuration getConfiguration() {
 		return configuration;
 	}

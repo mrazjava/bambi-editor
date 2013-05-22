@@ -210,4 +210,22 @@ public interface Configuration {
 	 * @see ConfigParameters#RADIOGROUP_OUTPUTTYPE_LABEL
 	 */
 	public String getRadioOutputTypeLabel();
+	
+	/**
+	 * External URL for welcome startup screen. Optional. Superseeds 
+	 * {@link #getWelcomeResourcePath()}.
+	 * 
+	 * @return
+	 * @see ConfigParameters#WELCOME_URL
+	 */
+	public String getWelcomeUrl();
+	
+	/**
+	 * Internal resource for welcome startup screen. Optional. Superseeded 
+	 * by {@link #getWelcomeUrl()}.
+	 * 
+	 * @return
+	 * @see ConfigParameters#WELCOME_RESOURCE_PATH
+	 */
+	public String getWelcomeResourcePath();
 }

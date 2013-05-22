@@ -36,9 +36,6 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
-import javax.jnlp.BasicService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -92,12 +89,12 @@ import org.zimowski.bambi.editor.customui.statusbar.RgbCell;
 import org.zimowski.bambi.editor.customui.statusbar.StatusBar;
 import org.zimowski.bambi.editor.customui.statusbar.TextCell;
 import org.zimowski.bambi.editor.filters.ImageFilterOps;
-import org.zimowski.bambi.editor.plugins.api.ImageExportDef;
-import org.zimowski.bambi.editor.plugins.api.ImageExporter;
-import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 import org.zimowski.bambi.editor.plugins.api.ExportAbortInformer;
 import org.zimowski.bambi.editor.plugins.api.ExportProgressMonitor;
 import org.zimowski.bambi.editor.plugins.api.ExportStateMonitor;
+import org.zimowski.bambi.editor.plugins.api.ImageExportDef;
+import org.zimowski.bambi.editor.plugins.api.ImageExporter;
+import org.zimowski.bambi.editor.plugins.api.TextEncrypter;
 import org.zimowski.bambi.editor.studio.cam.CamFilterOps;
 import org.zimowski.bambi.editor.studio.cam.CamInitializationObserver;
 import org.zimowski.bambi.editor.studio.cam.CamPanel;
@@ -371,6 +368,7 @@ public class Editor extends JPanel implements
 	        enableImageControls(printImage != null);
 			filmPaneContainer.setVisible(true);
 			camPanel.stopWebCamSession();
+			webcamButton.setToolTipText("Start Web Cam Session");
 			//setStatusbarImagePath(statusBar.getUploadCell());
 			break;
 		case WebCam:
@@ -380,6 +378,7 @@ public class Editor extends JPanel implements
 			rgbPanel.setVisible(camRgbButton.isSelected());
 			hscbPanel.setVisible(false);
 			filmPaneContainer.setVisible(true);
+			webcamButton.setToolTipText("Stop Web Cam Session");
 			openCamDisplay();
 			break;
 		case Welcome:
@@ -390,6 +389,7 @@ public class Editor extends JPanel implements
 			hscbPanel.setVisible(false);
 			filmPaneContainer.setVisible(false);
 			camPanel.stopWebCamSession();
+			webcamButton.setToolTipText("Start Web Cam Session");
 		case Dummy: break;
 		default:
 			log.error("unsupported view: {}", view.toString());
@@ -1333,7 +1333,7 @@ public class Editor extends JPanel implements
 		pic4Radio.setEnabled(visible);
 		statusBar.getSelectorPositionCell().setVisible(visible);
 		statusBar.getSelectorSizeCell().setVisible(visible);
-		imageExportButton.setEnabled(visible);
+		imageExportButton.setEnabled(visible && EditorView.Picture.equals(currentView));
 	}
 	
 	private JPanel buildPictureTypeRadioPanel() {
@@ -1723,33 +1723,6 @@ public class Editor extends JPanel implements
         catch (MalformedURLException e)  {
         	log.error(e.getMessage());
         }        
-    }
-    
-    /**
-     * Shows the requested URL in client browser.
-     * 
-     * @param aUrl full url to navigate to
-     */
-    void showUrl(String aUrl) {
-    	
-    	BasicService bs;
-    	try {
-			bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
-		} catch (UnavailableServiceException e) {
-			log.error(e.getMessage());
-			return;
-		} 
-    	
-    	if(StringUtils.isEmpty(aUrl)) {
-    		log.warn("url param empty; aborting!");
-    		return;
-    	}
-    	
-    	try {
-			bs.showDocument(new URL(aUrl));
-		} catch (MalformedURLException e1) {
-			log.error(e1.getMessage());
-		}
     }
     
     /**

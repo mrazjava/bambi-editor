@@ -13,7 +13,9 @@ import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
 
 /**
  * Responsible for reading and parsing configuration file, then making these   
- * values accessible via {@link Configuration}.
+ * values accessible via {@link Configuration}. In order for loaded settings 
+ * be available for application's lifecycle they must be saved via 
+ * {@link #registerConfiguration()}.
  * 
  * @author Adam Zimowski (mrazjava)
  */
@@ -38,6 +40,12 @@ public class ConfigLoader implements ConfigParameters {
 	private ConfigurationImpl settings;
 	
 	
+	/**
+	 * Creates an instance of loader for parsing and saving configuration.
+	 * 
+	 * @param config properties representing configuration this loader should 
+	 * 	parse and load
+	 */
 	public ConfigLoader(Properties config) {
 		this.props = config;
 		settings = new ConfigurationImpl();
@@ -72,6 +80,18 @@ public class ConfigLoader implements ConfigParameters {
 	public boolean initializeParameters() {
 		
 		settings.lookAndFeel = props.getProperty(LOOK_AND_FEEL);
+		
+		String welcomeUrl = props.getProperty(WELCOME_URL);
+		if(StringUtils.isNotEmpty(welcomeUrl)) {
+			log.info("setting {} to {}", WELCOME_URL, welcomeUrl);
+			settings.welcomeUrl = welcomeUrl;
+		}
+		
+		String welcomeResourcePath = props.getProperty(WELCOME_RESOURCE_PATH);
+		if(StringUtils.isNotEmpty(welcomeResourcePath)) {
+			log.info("setting {} to {}", WELCOME_RESOURCE_PATH, welcomeResourcePath);
+			settings.welcomeResourcePath = welcomeResourcePath;
+		}		
 		
 		String numberOfPics = props.getProperty(NUMBER_OF_PIC_OUTPUTS);
 		log.info("setting {} to {}", NUMBER_OF_PIC_OUTPUTS, numberOfPics);

@@ -35,6 +35,13 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>javafx-runtime</artifactId>
+			<version>2.0.4</version>
+			<scope>system</scope>
+			<systemPath>/usr/lib/jvm/java-7-oracle/jre/lib/jfxrt.jar</systemPath>
+		</dependency>
+		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
 			<version>4.2</version>

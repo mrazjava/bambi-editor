@@ -42,6 +42,10 @@ class ConfigurationImpl implements Configuration {
 	@Deprecated
 	AppletContext appletContext = null;
 	
+	String welcomeUrl;
+	
+	String welcomeResourcePath;
+	
 	boolean selectorVisible = true; // default
 	
 	boolean rulerVisible = true; // default
@@ -111,6 +115,16 @@ class ConfigurationImpl implements Configuration {
 		imageUploaderConfig = new Properties();
 		loginIdEncrypterConfig = new Properties();
 		passwordEncrypterConfig = new Properties();
+	}
+
+	@Override
+	public String getWelcomeUrl() {
+		return welcomeUrl;
+	}
+
+	@Override
+	public String getWelcomeResourcePath() {
+		return welcomeResourcePath;
 	}
 
 	public int getNumberOfPics() {
