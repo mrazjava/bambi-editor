@@ -493,15 +493,22 @@ public class ImageContainer extends ScrollableJLabel
     			// and if so, reduce the width; do same check for height and bottom 
     			// pic edge
     			Point corner = getSelectorLeftUpperCorner();
+    			
+    			// prevent height growing when sizing top edge outside of bounds
+    			if(corner.y <= 1) return;
+    			
     			final int imageWidth = getImage().getWidth();
     			final int imageHeight = getImage().getHeight();
-    			log.trace(String.format("x: %s, y: %s, s-w: %s, s-h: %s, p-w: %s, p-h: %s", 
-    					corner.x, 
-    					corner.y,
-    					selectorWidth, 
-    					selectorHeight, 
-    					imageWidth, 
-    					imageHeight));
+    			
+    			if(log.isTraceEnabled()) {
+	    			log.trace(String.format("x: %s, y: %s, s-w: %s, s-h: %s, p-w: %s, p-h: %s", 
+	    					corner.x, 
+	    					corner.y,
+	    					selectorWidth, 
+	    					selectorHeight, 
+	    					imageWidth, 
+	    					imageHeight));
+    			}
     			if(corner.x + newWidth > imageWidth) return;
     			if(corner.y + newHeight > imageHeight) return;
     			
@@ -536,14 +543,16 @@ public class ImageContainer extends ScrollableJLabel
     				}
 
     			}
-    			log.trace(String.format("xSelectorDragOffset: %s, prevX: %s, prevY: %s, xDiff: %s, yDiff: %s, newWidth: %s, newHeight: %s", 
-    					xSelectorDragOffset, 
-    					prevX, 
-    					prevY, 
-    					xDiff, 
-    					yDiff, 
-    					newWidth, 
-    					newHeight));
+    			if(log.isTraceEnabled()) {
+	    			log.trace(String.format("xSelectorDragOffset: %s, prevX: %s, prevY: %s, xDiff: %s, yDiff: %s, newWidth: %s, newHeight: %s", 
+	    					xSelectorDragOffset, 
+	    					prevX, 
+	    					prevY, 
+	    					xDiff, 
+	    					yDiff, 
+	    					newWidth, 
+	    					newHeight));
+    			}
     			prevX = e.getX();
     			prevY = e.getY();
     		}
