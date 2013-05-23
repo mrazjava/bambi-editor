@@ -71,7 +71,7 @@ public class MultipartFormPostImageUploader extends AbstractImageExporter {
 	 * image to a database. Requires picture prefix identifier to assemble 
 	 * full parameter name.
 	 */
-	public static final String CONFIG_SCRIPT = "processingScript";
+	public static final String CONFIG_PROP_SCRIPT = "processingScript";
 
 
 	public MultipartFormPostImageUploader() {
@@ -165,7 +165,7 @@ public class MultipartFormPostImageUploader extends AbstractImageExporter {
 	}
 	
 	private String getRemoteScript() {
-		String key = selectorId + ConfigLoader.PARAM_SEPARATOR + CONFIG_SCRIPT;
+		String key = selectorId + ConfigLoader.PARAM_SEPARATOR + CONFIG_PROP_SCRIPT;
 		return configuration.getProperty(key);
 	}
 }

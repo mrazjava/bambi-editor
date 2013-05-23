@@ -187,11 +187,11 @@ public class Editor extends JPanel implements
 	
 	private JButton imageExportButton;
 	
-	private JComboBox zoomCombo;
+	private JComboBox<ScaleItem> scaleImageCombo;
 	
 	private boolean abort = false;
 	
-	private JComboBox jpgBgColorCombo;
+	private JComboBox<Color> jpgBgColorCombo;
 	
 	private StatusBar statusBar;
 	
@@ -1100,8 +1100,8 @@ public class Editor extends JPanel implements
         jpgBgColorCombo = buildColorCombo();
         scaleViewPanel.add(jpgBgColorCombo);
         
-        zoomCombo = buildScaleCombo();
-        scaleViewPanel.add(zoomCombo);
+        scaleImageCombo = buildScaleCombo();
+        scaleViewPanel.add(scaleImageCombo);
         
         return scaleViewPanel;
 	}
@@ -1242,9 +1242,9 @@ public class Editor extends JPanel implements
 		}
 	}
 	
-	private JComboBox buildScaleCombo() {
+	private JComboBox<ScaleItem> buildScaleCombo() {
 		
-        JComboBox combo = new JComboBox();
+        JComboBox<ScaleItem> combo = new JComboBox<ScaleItem>();
         
         combo.setToolTipText("Scale Image");
         combo.addItem(new ScaleItem(100));
@@ -1272,9 +1272,9 @@ public class Editor extends JPanel implements
         return combo;
 	}
 	
-	private JComboBox buildColorCombo() {
+	private JComboBox<Color> buildColorCombo() {
 		
-		JComboBox combo = new JComboBox();
+		JComboBox<Color> combo = new JComboBox<Color>();
 		
 		combo.setToolTipText("Round corner background color");
 		combo.setPreferredSize(ComboBoxColorCellRenderer.PREFERRED_SIZE);
@@ -2011,7 +2011,7 @@ public class Editor extends JPanel implements
 	}
 
 	private void handleModelReset() {
-		zoomCombo.setSelectedIndex(0);
+		scaleImageCombo.setSelectedIndex(0);
 		resetRgbSliders();
 		resetHsSliders();
 		resetCbSliders();
@@ -2045,7 +2045,7 @@ public class Editor extends JPanel implements
 
 	@Override
 	public void camScanComplete(List<VideoDevice> devices, ActionListener listener) {
-		JComboBox combo = statusBar.getVideoDeviceCell().getDropdown();
+		JComboBox<VideoDevice> combo = statusBar.getVideoDeviceCell().getDropdown();
 		if(combo.getItemCount() == 0) {
 			for(VideoDevice device : devices) combo.addItem(device);
 			combo.addItemListener(camStatusBarListener);
@@ -2058,11 +2058,10 @@ public class Editor extends JPanel implements
 	private void openCamDisplay() {
 		// this routine can be called anywhere so make sure button state is in sync
 		if(!webcamButton.isSelected()) webcamButton.setSelected(true);
-		//setCursorBusyEDTSafe();
 		setCursorBusy();
 		
 		VideoDevice camDevice = null;
-		JComboBox camDeviceCombo = statusBar.getVideoDeviceCell().getDropdown();
+		JComboBox<VideoDevice> camDeviceCombo = statusBar.getVideoDeviceCell().getDropdown();
 		if(camDeviceCombo.getItemCount() > 0) {
 			camDevice = (VideoDevice)camDeviceCombo.getSelectedItem();
 		}

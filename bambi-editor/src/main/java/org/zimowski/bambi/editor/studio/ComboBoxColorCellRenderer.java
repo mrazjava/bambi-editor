@@ -25,7 +25,7 @@ import org.zimowski.bambi.editor.config.Configuration;
  * 
  * @author Adam Zimowski (mrazjava)
  */
-public class ComboBoxColorCellRenderer implements ListCellRenderer {
+public class ComboBoxColorCellRenderer implements ListCellRenderer<Color> {
 	
 	private static final Logger log = 
 			LoggerFactory.getLogger(ComboBoxColorCellRenderer.class);
@@ -37,8 +37,8 @@ public class ComboBoxColorCellRenderer implements ListCellRenderer {
 	
 	@Override
 	public Component getListCellRendererComponent(
-			final JList list, 
-			Object value,
+			final JList<? extends Color> list, 
+			Color value,
 			final int index, 
 			final boolean isSelected, 
 			final boolean cellHasFocus) {
@@ -55,7 +55,7 @@ public class ComboBoxColorCellRenderer implements ListCellRenderer {
 				final int width = getWidth();
 				final int height = getHeight();
 				
-				Color selectedColor = (Color)list.getSelectedValue();
+				Color selectedColor = list.getSelectedValue();
 				
 				log.trace("c: {}, sc: {}", color.getRGB(), selectedColor.getRGB());
 				

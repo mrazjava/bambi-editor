@@ -13,11 +13,11 @@ public class DropdownCell<T> extends EmptyCell {
 	
 	//private static final Logger log = LoggerFactory.getLogger(DropdownCell.class);
 
-	private JComboBox dropdown;
+	private JComboBox<T> dropdown;
 
 
 	public DropdownCell() {
-		this(new JComboBox());
+		this(new JComboBox<T>());
 		initDropdown();
 	}
 	
@@ -28,7 +28,7 @@ public class DropdownCell<T> extends EmptyCell {
 	 * @param content array of elements to fill the dropdown
 	 */
 	public DropdownCell(T[] content) {
-		this(new JComboBox());
+		this(new JComboBox<T>());
 		initDropdown();
 		initContent(content);
 	}
@@ -41,7 +41,7 @@ public class DropdownCell<T> extends EmptyCell {
 	 * @param dropdown
 	 * @throws IllegalArgumentException if dropdown is null
 	 */
-	public DropdownCell(JComboBox dropdown) {
+	public DropdownCell(JComboBox<T> dropdown) {
 		super();
 		setLayout(new BorderLayout());
 		if(dropdown != null) {
@@ -58,7 +58,7 @@ public class DropdownCell<T> extends EmptyCell {
 		}
 	}
 	
-	public JComboBox getDropdown() {
+	public JComboBox<T> getDropdown() {
 		return dropdown;
 	}
 }

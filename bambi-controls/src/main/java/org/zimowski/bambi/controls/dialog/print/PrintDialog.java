@@ -173,12 +173,12 @@ public class PrintDialog extends JDialog {
 		initGui();
 	}
 	
-	private JComboBox printerCombo;
+	private JComboBox<Printer> printerCombo;
 	
 	private JPanel buildPrinterList() {
 		JPanel printerListPanel = new JPanel();
 		printerListPanel.setLayout(new BoxLayout(printerListPanel, BoxLayout.X_AXIS));
-		printerCombo = new JComboBox();
+		printerCombo = new JComboBox<Printer>();
 		DocFlavor myFormat = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
 		PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
 		PrintService[] services =PrintServiceLookup.lookupPrintServices(myFormat, aset);
@@ -325,8 +325,8 @@ public class PrintDialog extends JDialog {
 		preview.setMediaFormat(format);
 	}
 	
-	private JComboBox mediaFormatCombo;
-	private JComboBox mediaTrayCombo;
+	private JComboBox<Media> mediaFormatCombo;
+	private JComboBox<Media> mediaTrayCombo;
 	
 	/**
 	 * Populates supported media (paper, envelope, etc) formats for a given 
@@ -511,9 +511,9 @@ public class PrintDialog extends JDialog {
 		controlPanel.add(fullPagePanel);
 		controlPanel.add(relativePrevewSizes);
 
-		mediaFormatCombo = new JComboBox();
+		mediaFormatCombo = new JComboBox<Media>();
 		mediaFormatCombo.setPreferredSize(new Dimension(200, 20));
-		mediaTrayCombo = new JComboBox();
+		mediaTrayCombo = new JComboBox<Media>();
 		
 		controlPanel.add(mediaFormatCombo);
 		controlPanel.add(mediaTrayCombo);
