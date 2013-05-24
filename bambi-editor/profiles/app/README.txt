@@ -3,9 +3,13 @@ is useful to you.
 
 To start Bambi Editor:
 
-- from Windows, double click on: bambi.cmd
-- from Linux, invoke from command line: bambi.sh
-- from Mac: double click on: ?
+- from Windows, double click on:
+
+bambi.cmd
+
+- from Mac or Linux: 
+
+make bambi.sh executable (chmod +x bambi.sh), then invoke it
 
 BambiEditor is and always will be free software. BambiEditor is released 
 under GPL with one additional clause, see license.txt.

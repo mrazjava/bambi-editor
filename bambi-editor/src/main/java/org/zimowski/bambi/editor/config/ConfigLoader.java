@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
-import org.zimowski.bambi.editor.plugins.MultipartFormPostImageUploader;
+import org.zimowski.bambi.editor.plugins.FilesystemImageExporter;
 
 /**
  * Responsible for reading and parsing configuration file, then making these   
@@ -228,39 +228,59 @@ public class ConfigLoader implements ConfigParameters {
 		log.info("setting {} to {}", AUTH_REQUIRED, authenticationRequired);
 		
 		String imageExporterClass = props.getProperty(IMAGE_EXPORT_PLUGIN);
-		try { 
-			Class<?> clazz = Class.forName(imageExporterClass);
-			clazz.newInstance(); // test
+		if(StringUtils.isEmpty(imageExporterClass)) {
+			imageExporterClass = FilesystemImageExporter.class.getCanonicalName();
+			log.info("{} not defined; defaulting to {}", IMAGE_EXPORT_PLUGIN, imageExporterClass);
 		}
-		catch(Exception e) {
-			log.warn(String.format("invalid {} plugin {}; error: %s", e.getMessage()), 
-					IMAGE_EXPORT_PLUGIN, imageExporterClass);
-			imageExporterClass = MultipartFormPostImageUploader.class.getCanonicalName();
+		else {
+			try { 
+				Class<?> clazz = Class.forName(imageExporterClass);
+				clazz.newInstance(); // test
+			}
+			catch(Exception e) {
+				log.warn(String.format("invalid {} plugin {}; error: %s", e.getMessage()), 
+						IMAGE_EXPORT_PLUGIN, imageExporterClass);
+				imageExporterClass = FilesystemImageExporter.class.getCanonicalName();
+			}
+			log.info("setting {} to {}", IMAGE_EXPORT_PLUGIN, imageExporterClass);
 		}
-		log.info("using {} for {}", imageExporterClass, IMAGE_EXPORT_PLUGIN);
 		settings.imageUploaderClass = imageExporterClass;
 				
 		String loginIdEncryptClass = props.getProperty(AUTH_LOGINID_PLUGIN);
-		try { 
-			Class<?> clazz = Class.forName(loginIdEncryptClass);
-			clazz.newInstance();
-		}
-		catch(Exception e) {
-			log.warn("invalid {} plugin {}; using default", 
-					AUTH_LOGINID_PLUGIN, loginIdEncryptClass);
+		if(StringUtils.isEmpty(loginIdEncryptClass)) {
 			loginIdEncryptClass = ClearTextProxy.class.getCanonicalName();
+			log.info("{} not defined; defaulting to {}", AUTH_LOGINID_PLUGIN, loginIdEncryptClass);
+		}
+		else {
+			try { 
+				Class<?> clazz = Class.forName(loginIdEncryptClass);
+				clazz.newInstance();
+			}
+			catch(Exception e) {
+				log.warn("invalid {} plugin {}; using default", 
+						AUTH_LOGINID_PLUGIN, loginIdEncryptClass);
+				loginIdEncryptClass = ClearTextProxy.class.getCanonicalName();
+			}
+			log.info("setting {} to {}", AUTH_LOGINID_PLUGIN, loginIdEncryptClass);
 		}
 		settings.loginIdEncrypterClass = loginIdEncryptClass;
 
 		String passwordEncryptClass = props.getProperty(AUTH_PASS_PLUGIN);
-		try { 
-			Class<?> clazz = Class.forName(passwordEncryptClass);
-			clazz.newInstance();
-		}
-		catch(Exception e) {
-			log.warn("invalid {} plugin {}; using default", 
-					AUTH_PASS_PLUGIN, passwordEncryptClass);
+		if(StringUtils.isEmpty(passwordEncryptClass)) {
 			passwordEncryptClass = ClearTextProxy.class.getCanonicalName();
+			log.info("{} not defined; defaulting to {}", AUTH_PASS_PLUGIN, passwordEncryptClass);
+		}
+		else {
+			try { 
+				Class<?> clazz = Class.forName(passwordEncryptClass);
+				clazz.newInstance();
+			}
+			catch(Exception e) {
+				log.warn("invalid {} plugin {}; using default", 
+						AUTH_PASS_PLUGIN, passwordEncryptClass);
+				passwordEncryptClass = ClearTextProxy.class.getCanonicalName();
+			}
+			log.info("setting {} to {}", AUTH_PASS_PLUGIN, passwordEncryptClass);
 		}
 		settings.passwordEncrypterClass = passwordEncryptClass;
 		
