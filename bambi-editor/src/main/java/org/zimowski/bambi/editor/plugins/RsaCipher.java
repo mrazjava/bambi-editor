@@ -86,7 +86,7 @@ public class RsaCipher extends AbstractPluginAdapter implements TextEncrypter {
 	
 	public String decrypt(String cipherText, String privateKeyResourcePath) throws IOException {
 		InputStream privateKeyStream = RsaCipher.class.getResourceAsStream(privateKeyResourcePath);
-		if(privateKeyStream == null) throw new IOException(privateKeyStream + " not on classpath");
+		if(privateKeyStream == null) throw new IOException(privateKeyResourcePath + " not on classpath");
 		PrivateKey privateKey = RsaKeyGenerator.readPrivateKey(privateKeyStream);
 		return decrypt(cipherText, privateKey);
 	}

@@ -1,0 +1,20 @@
+BambiEditor can be built in two modes: DESKTOP and WEBSTART. Each build type 
+results in different outputs. For DESKTOP we build a small executable JAR with 
+several dependencies (referenced in the MANIFEST) and packaged in lib/. The 
+desktop build scheme is very much a typical software packaging scheme. Rather 
+than releasing a huge set of dependencies with every minor release, we only 
+want to release dependencies when they change (though there is nothing that 
+precludes us from packaging dependencies with every release).
+
+For WEBSTART we always package executable code together with dependencies into 
+a single huge JAR. This makes setting up JNLP much more straightfoward.
+
+The pom.xml is configured for above two build schemes with profile ids:
+
+app ........ desktop version
+ws  ........ webstart version
+
+cd target
+
+mvn clean package -P app
+mvn clean package -P ws

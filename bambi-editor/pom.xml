@@ -27,36 +27,93 @@
 				<resources>
 					<resource>
 						<directory>src/main/java/</directory>
-						<includes>
-							<include>**/*</include>
-						</includes>
 						<excludes>
-							<exclude>**/*.properties</exclude>
-							<exclude>/log4j.xml</exclude>
-							<exclude>**/*.v7</exclude>
+							<exclude>**/*.java</exclude>
+						</excludes>
+					</resource>
+					<resource>
+						<directory>src/main/resources/</directory>
+						<excludes>
+							<exclude>bambi.properties</exclude>
+							<exclude>log4j*.xml</exclude>
 						</excludes>
 					</resource>
 				</resources>
 				<plugins>
 					<plugin>
-						<artifactId>maven-assembly-plugin</artifactId>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
 						<configuration>
 							<archive>
 								<manifest>
+									<addClasspath>true</addClasspath>
+									<classpathPrefix>lib/</classpathPrefix>
 									<mainClass>org.zimowski.bambi.editor.BambiApp</mainClass>
 								</manifest>
 							</archive>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>2.8</version>
 						<executions>
 							<execution>
-								<id>make-assembly</id>
+								<id>copy-dependencies</id>
 								<phase>package</phase>
 								<goals>
-									<goal>single</goal>
+									<goal>copy-dependencies</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.directory}/lib</outputDirectory>
+									<overWriteReleases>false</overWriteReleases>
+									<overWriteSnapshots>false</overWriteSnapshots>
+									<overWriteIfNewer>true</overWriteIfNewer>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>ant1</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<tasks>
+										<copy todir="target/" flatten="true">
+											<fileset dir="profiles/app/" />
+										</copy>
+										<copy file="license.txt" todir="target/" />
+										<replace token="{version}" value="${global.version}"
+											dir="target/">
+											<include name="bambi.cmd" />
+											<include name="bambi.sh" />
+										</replace>
+										<replace token="{version}" value="${global.version}"
+											dir="target/classes/">
+											<include name="welcome.html" />
+										</replace>
+										<chmod file="target/bambi.sh" perm="+x" />
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>ant2</id>
+								<phase>package</phase>
+								<configuration>
+									<tasks>
+										<zip destfile="target/bambi-editor-${global.version}.zip">
+											<zipfileset dir="target/lib/" prefix="lib/"/>
+											<zipfileset dir="target/" excludes="antrun/, classes/, maven-archiver/, test-classes/, surefire/, surefire-reports/" />
+										</zip>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
 								</goals>
 							</execution>
 						</executions>
@@ -70,11 +127,8 @@
 				<resources>
 					<resource>
 						<directory>src/main/java/</directory>
-						<includes>
-							<include>**/*</include>
-						</includes>
 						<excludes>
-							<exclude>**/*.v7l</exclude>
+							<exclude>**/*.java</exclude>
 						</excludes>
 					</resource>
 					<resource>
@@ -82,7 +136,15 @@
 						<excludes>
 							<exclude>bambi.properties</exclude>
 							<exclude>log4j*.xml</exclude>
+							<exclude>public-test.key</exclude>
+							<exclude>private-test.key</exclude>
 						</excludes>
+					</resource>
+					<resource>
+						<directory>profiles/ws/</directory>
+						<includes>
+							<include>**/*</include>
+						</includes>
 					</resource>
 				</resources>
 				<plugins>
@@ -98,6 +160,7 @@
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
 							<appendAssemblyId>false</appendAssemblyId>
+							<attach>false</attach>
 						</configuration>
 						<executions>
 							<execution>
@@ -108,24 +171,6 @@
 								</goals>
 							</execution>
 						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>ws1</id>
-			<build>
-				<finalName>bambi-editor-config-${global.version}</finalName>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-jar-plugin</artifactId>
-						<version>2.4</version>
-						<configuration>
-							<excludes>
-								<exclude>**/*</exclude>
-							</excludes>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
@@ -227,6 +272,6 @@
 		</dependency>
 	</dependencies>
 
-	<description>A powerful yet fun, intuititive and easy to use java image editor and printer.</description>
+	<description>An easy to use &amp; fun, image editor and web authoring tool.</description>
 	<inceptionYear>2012</inceptionYear>
 </project>

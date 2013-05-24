@@ -8,6 +8,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -39,6 +41,7 @@ public class MainWindow extends JFrame {
 	
 	private Configuration config;
 
+	private SimpleDateFormat df = new SimpleDateFormat("H");
 	
 	public MainWindow() {
 		config = ConfigManager.getInstance().getConfiguration();
@@ -76,8 +79,9 @@ public class MainWindow extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				log.info("closing main window..");
+				log.debug("closing main window..");
 				dispose();
+				sayBye();
 			}
 		});
 		editPanel = new Editor();
@@ -121,6 +125,30 @@ public class MainWindow extends JFrame {
 				    "Out of Memory Error",
 				    JOptionPane.ERROR_MESSAGE);
     	}
+	}
+	
+	private void sayBye() {
+		
+		int hour = -1;
+		
+		try { hour = Integer.valueOf(df.format(new Date())); }
+		catch(NumberFormatException nfe) {
+			// it's stupid to error this out to end user; the whole  
+			// point is to be cute
+			log.debug(nfe.getMessage());
+		}
+		
+		String bye;
+		if(hour >= 4 && hour <= 12)
+			bye = "bye now, and have a great day!";
+		else if(hour > 12 && hour < 18)
+			bye = "bye, see you next time!";
+		else if(hour >= 18 && hour < 21)
+			bye = "good night..";
+		else
+			bye = "yawwwwwn.... night, sleep tight!";
+		
+		log.info(bye);		
 	}
 	
 	/**
