@@ -41,7 +41,7 @@
 	<appender name="LOG_CONSOLE_PROD"
 		class="org.apache.log4j.ConsoleAppender">
 		<param name="Target" value="System.out" />
-		<param name="threshold" value="trace" />
+		<param name="threshold" value="info" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
 				value="%d{HH:mm:ss} %-5p - %m%n" />
@@ -51,7 +51,7 @@
 	<appender name="LOG_CONSOLE_TEST"
 		class="org.apache.log4j.ConsoleAppender">
 		<param name="Target" value="System.out" />
-		<param name="threshold" value="trace" />
+		<param name="threshold" value="debug" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
 				value="%d [%M] %-5p %c{1} (%F:%L) - %m%n" />
@@ -66,13 +66,12 @@
 	<!-- categories -->
 
 	<category name="org.zimowski.bambi" additivity="false">
-		<priority value="debug" />
-		<appender-ref ref="LOG_CONSOLE_TEST" />
+		<appender-ref ref="LOG_CONSOLE_PROD" />
 	</category>
 
 	<category name="com.jhlabs" additivity="false">
-		<priority value="debug" />
-		<appender-ref ref="LOG_CONSOLE_TEST" />
+		<priority value="warn" />
+		<appender-ref ref="LOG_CONSOLE_PROD" />
 	</category>
 
 	<root> 

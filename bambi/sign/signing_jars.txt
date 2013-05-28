@@ -1,0 +1,19 @@
+# This is just a helper file with some additional information needed to sign 
+# Bambi JARs for Web Start deployment. Until somone contributes certificate 
+# with a validated chain, we will be dealing with a locally generated self  
+# signed one. Our certificate is generated to be valid for 1 year, therefore 
+# when it expires it needs to be re-generated:
+#
+# ONE TIME: generate keystore (cert):
+keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048
+#
+# /bambi-editor and /bambi-webstart JARs are automatically signed by their 
+# respective Maven builds.
+#
+# to verify jar signatures after build
+jarsigner -verify -certs -verbose bambi-webstart-XXX.jar
+jarsigner -verify -certs -verbose bambi-editor-XXX.jar
+#
+# When testing Web Start deployment it often helps to know how to clear JWS 
+# cache:
+javaws -uninstall

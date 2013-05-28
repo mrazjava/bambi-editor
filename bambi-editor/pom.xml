@@ -2,6 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- mvn clean package -P app|ws -->
+	<!-- ==================== Desktop Edition Build: ======================= -->
+	<!-- mvn clean package -P app -->
+	<!-- ==================== Web Start Edition Build: ===================== -->
+	<!-- mvn clean package -P ws -->
+
 	<name>bambi-editor</name>
 
 	<parent>
@@ -80,7 +86,7 @@
 								<id>ant1</id>
 								<phase>prepare-package</phase>
 								<configuration>
-									<tasks>
+									<target>
 										<copy todir="target/" flatten="true">
 											<fileset dir="profiles/app/" />
 										</copy>
@@ -95,7 +101,7 @@
 											<include name="welcome.html" />
 										</replace>
 										<chmod file="target/bambi.sh" perm="+x" />
-									</tasks>
+									</target>
 								</configuration>
 								<goals>
 									<goal>run</goal>
@@ -105,12 +111,13 @@
 								<id>ant2</id>
 								<phase>package</phase>
 								<configuration>
-									<tasks>
+									<target>
 										<zip destfile="target/bambi-editor-${global.version}.zip">
-											<zipfileset dir="target/lib/" prefix="lib/"/>
-											<zipfileset dir="target/" excludes="antrun/, classes/, maven-archiver/, test-classes/, surefire/, surefire-reports/" />
+											<zipfileset dir="target/lib/" prefix="lib/" />
+											<zipfileset dir="target/"
+												excludes="antrun/, classes/, maven-archiver/, test-classes/, surefire/, surefire-reports/" />
 										</zip>
-									</tasks>
+									</target>
 								</configuration>
 								<goals>
 									<goal>run</goal>
@@ -136,15 +143,7 @@
 						<excludes>
 							<exclude>bambi.properties</exclude>
 							<exclude>log4j*.xml</exclude>
-							<exclude>public-test.key</exclude>
-							<exclude>private-test.key</exclude>
 						</excludes>
-					</resource>
-					<resource>
-						<directory>profiles/ws/</directory>
-						<includes>
-							<include>**/*</include>
-						</includes>
 					</resource>
 				</resources>
 				<plugins>
@@ -168,6 +167,39 @@
 								<phase>package</phase>
 								<goals>
 									<goal>single</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>ant1</id>
+								<phase>prepare-package</phase>
+								<configuration>
+									<target>
+										<replace token="{version}" value="${global.version}"
+											dir="target/classes/">
+											<include name="welcome.html" />
+										</replace>
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>ant2</id>
+								<phase>package</phase>
+								<configuration>
+									<target>
+										<signjar jar="target/bambi-editor-${global.version}.jar"
+											alias="selfsigned" storepass="password" keystore="../bambi/sign/keystore.jks" />
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
 								</goals>
 							</execution>
 						</executions>

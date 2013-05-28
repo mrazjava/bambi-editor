@@ -7,7 +7,7 @@ want to release dependencies when they change (though there is nothing that
 precludes us from packaging dependencies with every release).
 
 For WEBSTART we always package executable code together with dependencies into 
-a single huge JAR. This makes setting up JNLP much more straightfoward.
+a single uber JAR. This makes setting up JNLP much more straightfoward.
 
 The pom.xml is configured for above two build schemes with profile ids:
 

@@ -11,6 +11,7 @@
 	<properties>
 		<!-- Unique entry point for version number management -->
 		<global.version>0.9.1</global.version>
+		<min.jdk>1.7.0_6</min.jdk>
 	</properties>
 	<url>www.bambieditor.com</url>
 

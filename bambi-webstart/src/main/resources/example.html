@@ -1,0 +1,17 @@
+<html>
+<head>
+<title>Bambi Editor</title>
+</head>
+<body>
+<h1>Experience Bambi!</h1>
+This is an example of how to configure a simple HTML file to display a Java 
+Web Start button for launching BambiEditor. Note, that a lot more is required 
+to get the whole thing actually working (JNLP script, signed JARs, etc).
+<script src="http://www.java.com/js/deployJava.js"></script>
+<script>        
+ var url = "http://localhost/bambi/bambi.jnlp";
+ deployJava.createWebStartLaunchButton(url, '1.7.0_6+');
+</script>
+<noscript>JavaScript is required for this page.</noscript>
+</body>
+</html>

@@ -43,7 +43,7 @@ public class WebStartProgress implements DownloadServiceListener {
 	}
 
 	private void create() {
-
+		
 		String sysLNF = UIManager.getSystemLookAndFeelClassName();
 		try {
 			UIManager.setLookAndFeel(sysLNF);
@@ -86,7 +86,8 @@ public class WebStartProgress implements DownloadServiceListener {
 		JLabel logoLbl = new JLabel(logo);
 		JLabel versionLbl = new JLabel();
 		// http://stackoverflow.com/questions/2712970/how-to-get-maven-artifact-version-at-runtime
-		String version = getClass().getPackage().getImplementationVersion();
+		//String version = getClass().getPackage().getImplementationVersion();
+		String version = System.getProperty("bambieditor.version");
 		if(version != null) {
 			versionLbl.setText("v. " + version);
 		}
@@ -115,7 +116,7 @@ public class WebStartProgress implements DownloadServiceListener {
 		c.weightx = 1;
 		c.gridx = 0;
 		c.gridy = 0;
-		JLabel line1 = new JLabel("<html><h1>Have fun with those pics!</h1></html>");
+		JLabel line1 = new JLabel("<html><h1>Have Fun with Images!</h1></html>");
 		// line1.setBackground(Color.yellow);
 		// line1.setOpaque(true);
 		line1.setHorizontalAlignment(JLabel.CENTER);
@@ -175,6 +176,7 @@ public class WebStartProgress implements DownloadServiceListener {
 			// above 99
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
+					if(frame == null) return;
 					frame.setVisible(false);
 					frame.dispose();
 				}

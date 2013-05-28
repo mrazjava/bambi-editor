@@ -26,9 +26,13 @@
 				<includes>
 					<include>**/*.png</include>
 				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources/</directory>
 				<excludes>
 					<exclude>log4j.xml</exclude>
-					<exclude>*.key</exclude>
+					<!-- just an informative output of local rsa keys -->
+					<exclude>keys.out</exclude>
 				</excludes>
 			</resource>
 		</resources>

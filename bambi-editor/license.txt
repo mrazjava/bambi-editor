@@ -1,4 +1,4 @@
-BambiEditor is released under GPL set forth below. In addition, to those terms, 
+BambiEditor is released under GPL set forth below. In addition to those terms, 
 you must not remove @author JavaDoc from the source code (you should add 
 additional @author tags if you enhanced it).
 

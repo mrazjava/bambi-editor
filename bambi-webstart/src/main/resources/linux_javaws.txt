@@ -1,9 +1,14 @@
-On Ubuntu, java path and javaws path are two different things. You could do:
+On Ubuntu (and I'd imagine other distros as well), java path and javaws path 
+are two different things. You could do:
 
 java -version
 
-get one version, yet javaws could run on another. If have more than one JVM 
-install on the dev machine, always check the following:
+get one version, yet:
+
+javaws -version
+
+could show another. If have more than one JVM installed on your dev machine, 
+always check the following (debian syntax):
 
 sudo update-alternatives --config java
 sudo update-alternatives --config javaws

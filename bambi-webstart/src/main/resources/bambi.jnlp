@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- codebase must point to location where core JARs are hosted -->
+<jnlp spec="1.0+" codebase="@codebase@" href="http://@url@@codebase@/bambi.jnlp">
+
+    <information>
+        <title>Bambi Editor</title>
+        <vendor>mrazjava</vendor>
+    </information>
+
+    <resources>
+        <!-- Application Resources -->
+        <jar href="http://@url@@codebase@/bambi-config-@g.version@.jar" />
+        <extension name="core" href="http://@url@@codebase@/bambi-core.jnlp"/>
+    </resources>
+
+    <application-desc 
+    	name="Friendly Image Editor &amp; Uploader" 
+    	main-class="org.zimowski.bambi.editor.BambiApp" 
+    	progress-class="org.zimowski.bambi.webstart.WebStartProgress" />
+
+</jnlp>

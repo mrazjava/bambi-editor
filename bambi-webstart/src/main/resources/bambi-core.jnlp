@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="@codebase@" href="http://@url@@codebase@/bambi-core.jnlp">
+    <information>
+        <title>BambiEditor Live</title>
+        <vendor>mrazjava</vendor>
+        <icon href="bambi_splash.png" kind="splash"/>
+    </information>
+	<security>
+		<all-permissions/>
+	</security>
+    <resources>
+        <!-- Application Resources -->
+        <j2se version="1.7+" href="http://java.sun.com/products/autodl/j2se" initial-heap-size="128m" max-heap-size="1024m" />
+        <property name="bambieditor.version" value="@g.version@" />
+        <jar href="http://@url@@codebase@/bambi-webstart-@p.version@.jar" download="progress" />
+        <jar href="http://@url@@codebase@/bambi-editor-@g.version@.jar" main="true" />
+    </resources>
+    <component-desc>BambiEditor Runtime and Core Libraries</component-desc>
+    <update check="always" policy="always"/>
+</jnlp>
