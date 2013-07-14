@@ -269,7 +269,7 @@ public interface ConfigParameters {
 	/**
 	 * Path to image file if autoload is desired. Also handy when developing 
 	 * and/or testing. If set, init routine will immediately load the file into 
-	 * editor for display. In applet mode, applet file select will be bypassed.
+	 * editor for display.
 	 */
 	public final String AUTOLOAD_IMAGE_FILEPATH = "autoloadImageFilePath";
 }
