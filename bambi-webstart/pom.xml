@@ -8,6 +8,8 @@
 	<!-- mvn clean package -->
 	<!-- ===================== sourceforge build: ========================== -->
 	<!-- mvn clean package -Djnlp.host=bambieditor.sourceforge.net -Dupload.dir= -->
+	<!-- ===================== sign existing jars:========================== -->
+	<!-- mvn antrun:run -->
 
 	<name>bambi-webstart</name>
 
@@ -54,6 +56,10 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
+						<manifestEntries>
+							<Permissions>all-permissions</Permissions>
+							<Codebase>http://${jnlp.host}${jnlp.codebase}/</Codebase>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
@@ -70,6 +76,7 @@
 										<include name="bambi_splash.png" />
 										<include name="*.jnlp" />
 										<include name="bambi.properties" />
+										<include name="welcome.html" />
 									</fileset>
 									<filterset>
 										<filter token="url" value="${jnlp.host}" />
@@ -102,7 +109,7 @@
 						</goals>
 					</execution>
 					<execution>
-						<id>ant2</id>
+						<id>default-cli</id>
 						<phase>package</phase>
 						<configuration>
 							<target>
@@ -120,6 +127,27 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+<!-- 	<profiles> -->
+<!-- 		<profile> -->
+<!-- 			<id>sign-ws</id> -->
+<!-- 			<build> -->
+<!-- 				<plugins> -->
+<!-- 					<plugin> -->
+<!-- 						<artifactId>maven-antrun-plugin</artifactId> -->
+<!-- 						<executions> -->
+<!-- 							<execution> -->
+<!-- 								<id>ant-sign-ws</id> -->
+<!-- 							</execution> -->
+<!-- 						</executions> -->
+<!-- 					</plugin> -->
+<!-- 				</plugins> -->
+<!-- 			</build> -->
+<!-- 		</profile> -->
+<!-- 		<profile> -->
+<!-- 			<id>sign-conf</id> -->
+<!-- 		</profile> -->
+<!-- 	</profiles> -->
 
 	<dependencies>
 		<dependency>
@@ -130,5 +158,5 @@
 			<systemPath>/usr/lib/jvm/java-7-oracle/jre/lib/javaws.jar</systemPath>
 		</dependency>
 	</dependencies>
-	<version>1.0</version>
+	<version>1.1.0</version>
 </project>

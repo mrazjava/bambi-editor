@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- codebase must point to location where core JARs are hosted -->
-<jnlp spec="1.0+" codebase="@codebase@" href="http://@url@@codebase@/bambi.jnlp">
+<jnlp spec="1.0+" codebase="http://@url@@codebase@/" href="bambi.jnlp">
 
     <information>
         <title>Bambi Editor</title>
@@ -8,14 +7,17 @@
     </information>
 
     <resources>
+    	<property name="jnlp.packEnabled" value="false"/>
+    	<!-- <property name="jnlp.bambieditor.splash-title" value="<html><h1>Custom Title</h1></html>" /> -->
         <!-- Application Resources -->
-        <jar href="http://@url@@codebase@/bambi-config-@g.version@.jar" />
+        <j2se version="1.7+" href="http://java.sun.com/products/autodl/j2se" initial-heap-size="128m" max-heap-size="1024m" />
+        <jar href="bambi-config-@g.version@.jar" download="lazy" />
         <extension name="core" href="http://@url@@codebase@/bambi-core.jnlp"/>
     </resources>
 
-    <application-desc 
-    	name="Friendly Image Editor &amp; Uploader" 
+    <application-desc  
     	main-class="org.zimowski.bambi.editor.BambiApp" 
     	progress-class="org.zimowski.bambi.webstart.WebStartProgress" />
 
+	<update check="always" policy="always"/>
 </jnlp>

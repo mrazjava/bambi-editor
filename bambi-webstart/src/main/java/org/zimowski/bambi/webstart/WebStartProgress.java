@@ -33,6 +33,19 @@ import javax.swing.border.EtchedBorder;
  */
 public class WebStartProgress implements DownloadServiceListener {
 
+	/**
+	 * System property. Version to be displayed on splash screen during the  
+	 * download. This is necessary because the JAR whose version we need may  
+	 * not have been downloaded yet so we can't read version from it.
+	 */
+	public static final String PROP_VERSION = "bambieditor.version";
+	
+	/**
+	 * System property. Custom title to be displayed on splash screen. This 
+	 * can be simple HTML if enhanced formatting is desired.
+	 */
+	public static final String PROP_TITLE = "jnlp.bambieditor.splash-title";
+	
 	private JFrame frame = null;
 	
 	private JProgressBar progressBar = null;
@@ -87,7 +100,7 @@ public class WebStartProgress implements DownloadServiceListener {
 		JLabel versionLbl = new JLabel();
 		// http://stackoverflow.com/questions/2712970/how-to-get-maven-artifact-version-at-runtime
 		//String version = getClass().getPackage().getImplementationVersion();
-		String version = System.getProperty("bambieditor.version");
+		String version = System.getProperty(WebStartProgress.PROP_VERSION);
 		if(version != null) {
 			versionLbl.setText("v. " + version);
 		}
@@ -108,6 +121,7 @@ public class WebStartProgress implements DownloadServiceListener {
 		northPanel.add(rightLogoPanel, BorderLayout.EAST);
 
 		JPanel centerPanel = new JPanel();
+		centerPanel.setOpaque(false);
 		// centerPanel.setBackground(Color.PINK);
 		// centerPanel.setBorder(new LineBorder(Color.red));
 		centerPanel.setLayout(new GridBagLayout());
@@ -116,20 +130,27 @@ public class WebStartProgress implements DownloadServiceListener {
 		c.weightx = 1;
 		c.gridx = 0;
 		c.gridy = 0;
-		JLabel line1 = new JLabel("<html><h1>Have Fun with Images!</h1></html>");
-		// line1.setBackground(Color.yellow);
-		// line1.setOpaque(true);
+		String title = System.getProperty(WebStartProgress.PROP_TITLE);
+		if(title == null) {
+			title = "<html><h1>Have Fun with Images!</h1></html>";
+		}
+		else if(title.length() > 2) {
+			// looks like a JWS bug which passes JNLP quotes into a peroperty
+			title = title.substring(1, title.length()-1);
+		}
+		JLabel line1 = new JLabel(title);
+		JLabel line2 = new JLabel(new ImageIcon(WebStartProgress.class.getResource("/loading.gif")));
+		line2.setBorder(new EmptyBorder(15, 0, 0, 0));
 		line1.setHorizontalAlignment(JLabel.CENTER);
-		line1.setBorder(new EmptyBorder(20, 0, 0, 0));
+		line1.setBorder(new EmptyBorder(5, 0, 0, 0));
 		centerPanel.add(line1, c);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 0;
 		c.gridy = 1;
-		JLabel line2 = new JLabel();
-		//line2.setText("2010 - 2013 mrazjava");
-		line2.setOpaque(false);
-		line2.setHorizontalAlignment(JLabel.LEFT);
+		JLabel line3 = new JLabel();
+		line3.setOpaque(false);
+		line3.setHorizontalAlignment(JLabel.LEFT);
 		centerPanel.add(line2, c);
 		c.weighty = 1;
 		c.gridx = 0;
@@ -141,11 +162,10 @@ public class WebStartProgress implements DownloadServiceListener {
 		c.gridy = 3;
 		c.gridheight = 1;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		JLabel line3 = new JLabel("www.bambieditor.com");
-		// line3.setBackground(Color.yellow);
-		// line3.setOpaque(true);
-		line3.setHorizontalAlignment(JLabel.RIGHT);
-		centerPanel.add(line3, c);
+
+		line4 = new JLabel("Please wait, downloading ...");
+		line4.setHorizontalAlignment(JLabel.RIGHT);
+		centerPanel.add(line4, c);
 
 		top.add(northPanel, BorderLayout.NORTH);
 		top.add(centerPanel, BorderLayout.CENTER);
@@ -153,6 +173,7 @@ public class WebStartProgress implements DownloadServiceListener {
 
 		return top;
 	}
+	private JLabel line4;
 
 	private void updateProgressUI(int overallPercent) {
 		if (overallPercent > 0 && overallPercent < 99) {
@@ -164,6 +185,9 @@ public class WebStartProgress implements DownloadServiceListener {
 				// < 100 this prevents flashing when
 				// RIA is loaded from cache
 				create();
+			}
+			if(line4 != null && status != 0) {
+				line4.setText(status == 1 ? "upgrading ..." : "validating ...");				
 			}
 			progressBar.setValue(overallPercent);
 			SwingUtilities.invokeLater(new Runnable() {
@@ -184,25 +208,38 @@ public class WebStartProgress implements DownloadServiceListener {
 		}
 	}
 
+	/**
+	 * 0 - downloading (initial state)<br/>
+	 * 1 - upgrading<br/>
+	 * 2 - validating 
+	 */
+	private int status = 0;
+
 	@Override
-	public void downloadFailed(URL arg0, String arg1) {
+	public void downloadFailed(URL url, String version) {
+		System.out.println("download failed");
 	}
 
 	@Override
 	public void progress(URL url, String version, long readSoFar, long total,
 			int overallPercent) {
+		System.out.println(String.format("downloading.. %d%% | %d%% | %d%%", overallPercent, readSoFar, total));
 		updateProgressUI(overallPercent);
 	}
 
 	@Override
 	public void upgradingArchive(java.net.URL url, java.lang.String version,
 			int patchPercent, int overallPercent) {
+		status = 1;
+		System.out.println(String.format("upgrading.. %d%%", overallPercent));
 		updateProgressUI(overallPercent);
 	}
 
 	@Override
 	public void validating(java.net.URL url, java.lang.String version,
 			long entry, long total, int overallPercent) {
+		status = 2;
+		System.out.println(String.format("validating.. %d%%", overallPercent));
 		updateProgressUI(overallPercent);
 	}
 
