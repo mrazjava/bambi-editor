@@ -388,7 +388,7 @@ public class FilmPane extends JComponent implements MouseMotionListener, MouseLi
 		else {
 			// user selected different image from film
 			selectedThumb = thumbNo;
-			loadImage(thumbNo-1);			
+			loadImage(thumbNo-1);	
 		}
 	}
 	

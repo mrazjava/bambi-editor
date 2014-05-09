@@ -82,7 +82,8 @@ public class ScaleFilter extends AbstractBufferedImageOp {
     		dst = createCompatibleDestImage(src, dstCM, width, height);
 		}
 
-		Image scaleImage = src.getScaledInstance( width, height, Image.SCALE_AREA_AVERAGING );
+		// SCALE_AREA_AVERAGING produces undesired effect of distorted circumference if image is oval
+    	Image scaleImage = src.getScaledInstance( width, height, Image.SCALE_REPLICATE);
 		Graphics2D g = dst.createGraphics();
 		g.drawImage( scaleImage, 0, 0, width, height, null );
 		g.dispose();

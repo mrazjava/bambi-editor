@@ -207,6 +207,8 @@ public class Editor extends JPanel implements
 	
 	private JPanel dummyPanel = new JPanel();
 	
+	private JToggleButton homeButton;
+	
 	private JToggleButton webcamButton;
 	
 	private ViewportMouseListener displayImageMouseListener;
@@ -355,7 +357,7 @@ public class Editor extends JPanel implements
 	
 	private JPanel eastToolbarPane = new JPanel();
 	private JPanel westToolbarPane = new JPanel();
-
+	
 	private void setView(EditorView view) {
 		CardLayout layout = (CardLayout)cardPanel.getLayout();
 		layout.show(cardPanel, view.toString());
@@ -368,7 +370,9 @@ public class Editor extends JPanel implements
 	        enableImageControls(printImage != null);
 			filmPaneContainer.setVisible(true);
 			camPanel.stopWebCamSession();
+			homeButton.setSelected(false);
 			webcamButton.setToolTipText("Start Web Cam Session");
+			webcamButton.setSelected(false);
 			//setStatusbarImagePath(statusBar.getUploadCell());
 			break;
 		case WebCam:
@@ -378,6 +382,7 @@ public class Editor extends JPanel implements
 			rgbPanel.setVisible(camRgbButton.isSelected());
 			hscbPanel.setVisible(false);
 			filmPaneContainer.setVisible(true);
+			homeButton.setSelected(false);
 			webcamButton.setToolTipText("Stop Web Cam Session");
 			openCamDisplay();
 			break;
@@ -389,6 +394,9 @@ public class Editor extends JPanel implements
 			hscbPanel.setVisible(false);
 			filmPaneContainer.setVisible(false);
 			camPanel.stopWebCamSession();
+			enableImageControls(false);
+			homeButton.setSelected(true);
+			webcamButton.setSelected(false);
 			webcamButton.setToolTipText("Start Web Cam Session");
 		case Dummy: break;
 		default:
@@ -408,10 +416,14 @@ public class Editor extends JPanel implements
 		bar.setLayout(new BorderLayout());
 		bar.setBorder(new EtchedBorder());
 		
+		homeButton = new JToggleButton(ToolbarIcons.Home.getIcon());
+		homeButton.addActionListener(new HomeListener());
+		
         webcamButton = new JToggleButton(ToolbarIcons.Webcam.getIcon());
         webcamButton.addActionListener(new WebCamListener());
 		
-		bar.add(webcamButton);
+        bar.add(homeButton, BorderLayout.WEST);
+		bar.add(webcamButton, BorderLayout.EAST);
 		
 		return bar;
 	}
@@ -874,8 +886,7 @@ public class Editor extends JPanel implements
 
         return topPanel;
 	}
-	
-	@SuppressWarnings("restriction")
+
 	private JDialog buildLoginDialog() {
 		
 		JFrame parent = (JFrame)Editor.this.getTopLevelAncestor();
@@ -887,6 +898,7 @@ public class Editor extends JPanel implements
 		d.addLoginDialogListener(loginDialogAdapter);
 		d.setTitle("Login Required");
 		d.setPrompt(config.getAuthenticationPrompt());
+		d.setLoginIdLabel(config.getAuthenticationPromptLoginId());
 		String host = null;
 		try { host = new URL(config.getRemoteHost()).getHost(); }
 		catch(MalformedURLException e) {
@@ -895,10 +907,10 @@ public class Editor extends JPanel implements
 		if(StringUtils.isNotEmpty(host)) d.setServerName(host);
 		d.setUndecorated(true);
 		d.initialize();
-		d.pack();
 		d.setLocationRelativeTo(parent);
-		// FIXME: once on 1.7 switch to public API
-		com.sun.awt.AWTUtilities.setWindowOpacity(d, 0.85f);
+		d.setLocationByPlatform(true);
+		d.pack();
+		d.setOpacity(0.85f);
 		
 		return d;
 	}
@@ -1153,6 +1165,8 @@ public class Editor extends JPanel implements
 	
 	@Subscribe
 	public void onImageOpen(ImageLoadEvent ev) {
+		log.debug("image open: " + ev.getEventType());
+		
 		currentImageFile = ev.getImageFile();
 		setStatusbarImagePath(statusBar.getUploadCell());
 		if(!ev.isAutoLoaded()) {
@@ -1534,6 +1548,7 @@ public class Editor extends JPanel implements
 						if(loginDialog == null) {
 							loginDialog = buildLoginDialog();
 						}
+						loginDialog.setLocationByPlatform(true);
 						loginDialog.setVisible(true);
 						loginId = loginDialogAdapter.getLoginId();
 						password = loginDialogAdapter.getPassword();
@@ -1754,9 +1769,7 @@ public class Editor extends JPanel implements
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			JToggleButton camButton = (JToggleButton)e.getSource();
-
-			if(camButton.isSelected()) {
+			if(webcamButton.isSelected()) {
 				setView(EditorView.WebCam);
 				//openCamDisplay();
 			}
@@ -1765,6 +1778,23 @@ public class Editor extends JPanel implements
 				setView(filmPane.getThumbCount() > 0 ? 
 						EditorView.Picture : EditorView.Welcome);
 				//setStatusbarImagePath(statusBar.getUploadCell());
+			}
+		}
+    }
+    
+    class HomeListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if(homeButton.isSelected()) {
+				if(webcamButton.isSelected()) webcamButton.setSelected(false);
+				setView(EditorView.Welcome);
+			}
+			else {
+				setView(filmPane.getThumbCount() > 0 ? 
+						EditorView.Picture : EditorView.Welcome);
+				if(currentView.equals(EditorView.WebCam)) webcamButton.setSelected(true);
 			}
 		}
     }
@@ -1910,7 +1940,11 @@ public class Editor extends JPanel implements
 		resetRgbSliders = ev.isRgbReset();
 		resetHsSliders = ev.isHsReset();
 		resetCbSliders = ev.isCbReset();
+
 		switch(phase) {
+		case Initialized:
+			log.debug("model initialized");
+			break;
 		case BeforeChange:
 			setCursorBusy();
 			break;
@@ -1923,6 +1957,7 @@ public class Editor extends JPanel implements
 			break;
 		case Reset:
 			handleModelReset();
+			if(EditorView.WebCam.equals(currentView)) setView(EditorView.Picture);
 			break;
 		default:
 		}
@@ -2141,7 +2176,10 @@ public class Editor extends JPanel implements
 
 	@Override
 	public void windowOpened(WindowEvent e) {
-		if(currentView == null) setView(EditorView.Welcome);
+		if(currentView == null) {
+			homeButton.setSelected(true);
+			setView(EditorView.Welcome);
+		}
 	}
 
 	@Override

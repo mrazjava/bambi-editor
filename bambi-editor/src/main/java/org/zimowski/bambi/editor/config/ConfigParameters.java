@@ -1,5 +1,6 @@
 package org.zimowski.bambi.editor.config;
 
+import org.zimowski.bambi.controls.dialog.login.LoginDialog;
 import org.zimowski.bambi.editor.plugins.ClearTextProxy;
 import org.zimowski.bambi.editor.plugins.FtpImageUploader;
 import org.zimowski.bambi.editor.plugins.MD5Digest;
@@ -94,9 +95,19 @@ public interface ConfigParameters {
 	 * enter login credentials. The default is {@link #DEFAULT_AUTH_PROMPT}.
 	 */
 	public final String AUTH_PROMPT = "authenticationPrompt";
-	
+		
 	public static final String DEFAULT_AUTH_PROMPT = 
-			"Enter login credentials you normally use for this website";
+			LoginDialog.DEFAULT_PROMPT;
+	
+	/**
+	 * Replacement label for Login ID field. This is a useful override in cases 
+	 * where login id is something like an e-mail.  The default is 
+	 * {@link #DEFAULT_AUTH_PROMPT_LOGINID}.
+	 */
+	public final String AUTH_PROMPT_LOGINID = "authenticationPromptLoginId"; 
+
+	public static final String DEFAULT_AUTH_PROMPT_LOGINID = 
+			LoginDialog.DEFAULT_PROMPT_LOGIND;
 	
 	/**
 	 * Determines how to secure user's login id before transmission. The value 

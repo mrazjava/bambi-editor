@@ -48,6 +48,7 @@ public enum ToolbarIcons {
 	Contrast("contrast24x24.png", ImageFilterOps.Contrast.toString()),
 	Rgb("rgb24x24.png", CamFilterOps.Rgb.toString()),
 	Stream("stream24x24.png", CamFilterOps.None.toString()),
+	Home("home24x24.png", "Welcome Screen"),
 	Webcam("webcam24x24.png", "Webcam"),
 	Camera("camera32x32.png", "Take Picture"),
 	Export("upload24x24.png", "Export Image"),

@@ -193,6 +193,12 @@ public interface Configuration {
 	public String getAuthenticationPrompt();
 	
 	/**
+	 * @return custom label displayed for LOGIN ID authentication dialog
+	 * @see ConfigParameters#AUTH_PROMPT_LOGINID
+	 */
+	public String getAuthenticationPromptLoginId();
+	
+	/**
 	 * @return context of this applet; null if stand alone app
 	 * @deprecated No direct replacement. This app has outgrown the applet 
 	 * 	technology. Use Java Web Start instead.

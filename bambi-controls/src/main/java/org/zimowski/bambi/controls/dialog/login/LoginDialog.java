@@ -7,6 +7,8 @@ import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,9 +49,13 @@ public class LoginDialog extends JDialog {
 	
 	private String prompt;
 	
+	private String loginIdLabel = DEFAULT_PROMPT_LOGIND;
+	
 	private String serverName;
 	
-	private static final String DEFAULT_PROMPT = "<html><h2>Web Login</h2></html>";
+	public static final String DEFAULT_PROMPT = "<html><h2>Web Login</h2></html>";
+	
+	public static final String DEFAULT_PROMPT_LOGIND = "Login ID";
 	
 	private static final String DEFAULT_SHORT_MSG = 
 			"<html><i>%s requires authentication</i></html>";
@@ -138,11 +144,47 @@ public class LoginDialog extends JDialog {
 		JLabel promptLabel = new JLabel(promptMsg);
 		promptLabel.setPreferredSize(new Dimension(200, 50));
 		JLabel iconLabel = new JLabel(LoginDialogIcon.Password.getIcon());
-		JLabel loginIdLabel = new JLabel("Login ID:");
+		JLabel loginIdLabel = new JLabel(this.loginIdLabel + ":");
 		JLabel passwordLabel = new JLabel("Password:");
 		
 		final JTextField loginIdTxt = new JTextField(17);
 		final JPasswordField passwordTxt = new JPasswordField(17);
+		
+		final JCheckBox remember = new JCheckBox("Remember next time");
+		contentPane.add(remember);
+		
+		ActionListener okButtonListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(loginIdTxt.getText().trim().length() == 0) {
+					JOptionPane.showMessageDialog(LoginDialog.this,
+						    LoginDialog.this.loginIdLabel + " can't be blank",
+						    "Input Error",
+						    JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				else if(passwordTxt.getPassword().length == 0) {
+					JOptionPane.showMessageDialog(LoginDialog.this,
+						    "Password can't be blank",
+						    "Input Error",
+						    JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(loginDialogListeners.size() > 0) {
+					for(LoginDialogListener listener : loginDialogListeners) {
+						listener.okay(
+								loginIdTxt.getText(), 
+								new String(passwordTxt.getPassword()), 
+								remember.isSelected());
+					}
+				}
+				
+				dispose();
+			}
+		};
+		
+		loginIdTxt.addActionListener(okButtonListener);
+		passwordTxt.addActionListener(okButtonListener);
 		
 		contentPane.add(promptLabel);
 		contentPane.add(iconLabel);
@@ -169,42 +211,11 @@ public class LoginDialog extends JDialog {
 		layout.putConstraint(SpringLayout.WEST, iconLabel, 25, SpringLayout.WEST, contentPane);
 		layout.putConstraint(SpringLayout.NORTH, iconLabel, 15, SpringLayout.NORTH, contentPane);
 		
-		final JCheckBox remember = new JCheckBox("Remember next time");
-		contentPane.add(remember);
-		
 		layout.putConstraint(SpringLayout.WEST, remember, 0, SpringLayout.WEST, passwordTxt);
 		layout.putConstraint(SpringLayout.NORTH, remember, 30, SpringLayout.NORTH, passwordTxt);
 		
 		final JButton okButton = new JButton("OK");
-		okButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(loginIdTxt.getText().trim().length() == 0) {
-					JOptionPane.showMessageDialog(LoginDialog.this,
-						    "Login ID can't be blank",
-						    "Input Error",
-						    JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				else if(passwordTxt.getPassword().length == 0) {
-					JOptionPane.showMessageDialog(LoginDialog.this,
-						    "Password can't be blank",
-						    "Input Error",
-						    JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				if(loginDialogListeners.size() > 0) {
-					for(LoginDialogListener listener : loginDialogListeners) {
-						listener.okay(
-								loginIdTxt.getText(), 
-								new String(passwordTxt.getPassword()), 
-								remember.isSelected());
-					}
-				}
-				
-				dispose();
-			}
-		});
+		okButton.addActionListener(okButtonListener);
 		
 		final JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
@@ -244,6 +255,18 @@ public class LoginDialog extends JDialog {
 
 		layout.putConstraint(SpringLayout.EAST, cancelButton, 0, SpringLayout.EAST, passwordTxt);
 		layout.putConstraint(SpringLayout.NORTH, cancelButton, 3, SpringLayout.SOUTH, separator);
+		
+		addComponentListener(new ComponentAdapter() {
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				super.componentShown(e);
+				if(!remember.isSelected()) {
+					loginIdTxt.setText(null);
+					passwordTxt.setText(null);
+				}
+			}
+		});
 	}
 
 	public void addLoginDialogListener(LoginDialogListener loginDialogListener) {
@@ -262,6 +285,10 @@ public class LoginDialog extends JDialog {
 		this.prompt = prompt;
 	}
 	
+	public void setLoginIdLabel(String loginIdLabel) {
+		this.loginIdLabel = loginIdLabel;
+	}
+
 	public void setServerName(String serverName) {
 		if(serverName == null) return;
 		String name;

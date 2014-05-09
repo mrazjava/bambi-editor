@@ -107,6 +107,7 @@ class ConfigurationImpl implements Configuration {
 	
 	String authenticationPrompt = null;
 	
+	String authenticationPromptLoginId = null;
 	
 	/**
 	 * Can only be instantiated at package level
@@ -249,6 +250,11 @@ class ConfigurationImpl implements Configuration {
 	@Override
 	public String getAuthenticationPrompt() {
 		return authenticationPrompt;
+	}
+
+	@Override
+	public String getAuthenticationPromptLoginId() {
+		return authenticationPromptLoginId;
 	}
 
 	@Deprecated

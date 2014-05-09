@@ -2,12 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- mvn clean package [-Djnlp.host=localhost|bambieditor.sourceforge.net] 
-		[-Djnlp.codebase=/bambi] [-Dupload.dir=] -->
 	<!-- ===================== localhost build: ============================ -->
-	<!-- mvn clean package -->
+	<!-- mvn clean package -Djnlp.host=localhost -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
 	<!-- ===================== sourceforge build: ========================== -->
-	<!-- mvn clean package -Djnlp.host=bambieditor.sourceforge.net -Dupload.dir= -->
+	<!-- mvn clean package -Djnlp.host=bambieditor.sourceforge.net -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
 	<!-- ===================== sign existing jars:========================== -->
 	<!-- mvn antrun:run -->
 
@@ -72,11 +70,10 @@
 						<configuration>
 							<target>
 								<copy todir="target/">
-									<fileset dir="src/main/resources/">
-										<include name="bambi_splash.png" />
-										<include name="*.jnlp" />
-										<include name="bambi.properties" />
-										<include name="welcome.html" />
+									<fileset dir="src/main/resources/${client}">
+										<include name="*jnlp*" />
+										<include name="bambi${prop.type}.properties"  />
+										<include name="start${prop.type}.html" />
 									</fileset>
 									<filterset>
 										<filter token="url" value="${jnlp.host}" />
@@ -86,17 +83,35 @@
 										<filter token="upload.dir" value="${upload.dir}" />
 									</filterset>
 								</copy>
+								<move file="target/bambi${prop.type}.properties" tofile="target/bambi.properties"/>
+								<move file="target/start${prop.type}.html" tofile="target/start.html"/>
 								<replace token="{url}" value="${jnlp.host}" dir="target/">
 									<include name="bambi.properties" />
 								</replace>
-								<jar destfile="target/bambi-config-${global.version}.jar">
+								<replace token="{g.version}" value="${global.version}" dir="target/">
+									<include name="start.html" />
+								</replace>
+								<jar destfile="target/bambi-config${prop.type}-${global.version}.jar">
 									<file file="target/bambi.properties" />
-									<file file="src/main/resources/log4j.xml" />
+									<file file="target/start.html" />
+									<fileset dir="src/main/resources/${client}">
+										<include name="log4j.xml" />
+										<include name="*.gif" />
+										<include name="*.jpg" />
+										<include name="*.jpeg" />
+										<include name="*.png" />
+									</fileset>
+									<fileset dir="../bambi-editor/src/main/java/org/zimowski/bambi/editor/studio/resources/toolbar/">
+										<include name="open24x24.png" />
+										<include name="upload24x24.png" />
+										<include name="webcam24x24.png" />
+									</fileset>
 									<manifest>
 										<attribute name="Built-By" value="Maven AntRun" />
 										<attribute name="Implementation-Vendor" value="mrazjava" />
 										<attribute name="Implementation-Title" value="BambiEditor" />
 										<attribute name="Implementation-Version" value="${global.version}" />
+										<attribute name="Permissions" value="all-permissions" />
 									</manifest>
 								</jar>
 								<delete>
@@ -113,10 +128,10 @@
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<signjar jar="target/bambi-webstart-${project.version}.jar"
-									alias="selfsigned" storepass="password" keystore="../bambi/sign/keystore.jks" />
-								<signjar jar="target/bambi-config-${global.version}.jar"
-									alias="selfsigned" storepass="password" keystore="../bambi/sign/keystore.jks" />
+								<signjar jar="target/bambi-webstart-${project.version}.jar" tsaurl="http://timestamp.digicert.com" 
+									alias="${signalias}" storepass="${signpass}" keystore="../bambi/sign/${client}keystore.jks" />
+								<signjar jar="target/bambi-config${prop.type}-${global.version}.jar" tsaurl="http://timestamp.digicert.com"
+									alias="${signalias}" storepass="${signpass}" keystore="../bambi/sign/${client}keystore.jks" />
 							</target>
 						</configuration>
 						<goals>

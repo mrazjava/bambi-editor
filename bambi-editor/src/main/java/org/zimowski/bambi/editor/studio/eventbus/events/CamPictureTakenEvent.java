@@ -5,6 +5,8 @@ import java.util.Date;
 
 import org.openimaj.image.ImageUtilities;
 import org.openimaj.image.MBFImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Indicates that picture was taken from live video feed.
@@ -13,6 +15,8 @@ import org.openimaj.image.MBFImage;
  */
 public class CamPictureTakenEvent extends BambiEvent {
 
+	private final static Logger log = LoggerFactory.getLogger(CamPictureTakenEvent.class);
+	
 	private MBFImage picture;
 	
 	private Date timeTaken;
@@ -21,6 +25,7 @@ public class CamPictureTakenEvent extends BambiEvent {
 		super(BambiEvent.EV_CAM);
 		this.picture = picture;
 		timeTaken = new Date();
+		log.info("{}x{} picture taken on {}", picture.getWidth(), picture.getHeight(), timeTaken);
 	}
 	
 	/**

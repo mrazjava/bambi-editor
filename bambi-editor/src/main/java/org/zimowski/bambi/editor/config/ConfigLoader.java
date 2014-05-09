@@ -289,7 +289,14 @@ public class ConfigLoader implements ConfigParameters {
 			log.info("setting {} to {}", AUTH_PROMPT, authenticationPrompt);
 			settings.authenticationPrompt = authenticationPrompt;
 		}
-		
+
+		String authenticationPromptLoginId = props.getProperty(AUTH_PROMPT_LOGINID);
+		if(StringUtils.isEmpty(authenticationPromptLoginId)) {
+			authenticationPromptLoginId = ConfigParameters.DEFAULT_AUTH_PROMPT_LOGINID;
+		}
+		log.info("setting {} to {}", AUTH_PROMPT_LOGINID, authenticationPromptLoginId);
+		settings.authenticationPromptLoginId = authenticationPromptLoginId;
+
 		String windowTitle = props.getProperty(WINDOW_TITLE);
 		if(StringUtils.isNotEmpty(windowTitle)) {
 			log.info("setting {} to {}", WINDOW_TITLE, windowTitle);

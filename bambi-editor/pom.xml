@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- mvn clean package -P app|ws -->
+	<!-- mvn clean package -P app|ws -Dsignalias=selfsigned -Dsignpass=password -->
 	<!-- ==================== Desktop Edition Build: ======================= -->
-	<!-- mvn clean package -P app -->
+	<!-- mvn clean package -P app -Dclient= -Dsignalias=selfsigned -Dsignpass=password -->
 	<!-- ==================== Web Start Edition Build: ===================== -->
-	<!-- mvn clean package -P ws -->
+	<!-- mvn clean package -P ws -Dclient= -Dsignalias=selfsigned -Dsignpass=password -->
 
 	<name>bambi-editor</name>
 
@@ -56,6 +56,9 @@
 									<classpathPrefix>lib/</classpathPrefix>
 									<mainClass>org.zimowski.bambi.editor.BambiApp</mainClass>
 								</manifest>
+								<manifestEntries>
+             			<Permissions>all-permissions</Permissions>
+           			</manifestEntries>
 							</archive>
 						</configuration>
 					</plugin>
@@ -142,6 +145,7 @@
 						<directory>src/main/resources/</directory>
 						<excludes>
 							<exclude>bambi.properties</exclude>
+							<exclude>start.html</exclude>
 							<exclude>log4j*.xml</exclude>
 						</excludes>
 					</resource>
@@ -154,6 +158,9 @@
 								<manifest>
 									<mainClass>org.zimowski.bambi.editor.BambiApp</mainClass>
 								</manifest>
+								<manifestEntries>
+             			<Permissions>all-permissions</Permissions>
+           			</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
@@ -194,8 +201,8 @@
 								<phase>package</phase>
 								<configuration>
 									<target>
-										<signjar jar="target/bambi-editor-${global.version}.jar"
-											alias="selfsigned" storepass="password" keystore="../bambi/sign/keystore.jks" />
+										<signjar jar="target/bambi-editor-${global.version}.jar" tsaurl="http://timestamp.digicert.com"
+											alias="${signalias}" storepass="${signpass}" keystore="../bambi/sign/${client}keystore.jks" />
 									</target>
 								</configuration>
 								<goals>
