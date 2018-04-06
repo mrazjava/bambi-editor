@@ -22,8 +22,8 @@ For more information and to try BambiEditor's web uploading capabilities visit o
  - Plugin Architecture
 
 ## Initial Checkin
-This is port of a project from sourceforge. Bambi Editor was created in 2013, then left unattended. As the 
-author of the original, returning to it after several years, I have plans to fix project structure, build, 
-and add new features. Except for this readme, I pulled git repo from sourceforge in completely original state 
-with broken build issues and everything else. The initial checkin is tagged as 0.9.2 release and any further 
-development will follow.
+This is a port of a project from [sourceforge](https://sourceforge.net/projects/bambieditor/). Bambi Editor was 
+created in 2013, then left unattended. As the author of the original, returning to it after several years, I 
+have plans to fix project structure, the build, and add new features. Except for this readme, I pulled git repo 
+from sourceforge in completely original state with broken build issues and everything else. The initial checkin 
+is tagged as 0.9.2 release and any further development will follow.
