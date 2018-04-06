@@ -42,10 +42,12 @@ mvn clean package -P app -Dclient= -Dsignalias=selfsigned -Dsignpass=password
 
 ## Release Notes
 
-### 0.9.2.1 - April 6, 2018
+### 0.9.2.1 
+- April 6, 2018
 Fixed build problems. Deprecated webstart (no longer supported).
 
-### 0.9.2 - May 9, 2014
+### 0.9.2 
+- May 9, 2014
 Last release pushed to SourceForge with compiled binary. Uploaded SourceForge binary works well but the source 
 build is broken and needs fixes. For example, contains hard coded paths to system dependencies (eg: jfx) and 
 refers to custom built OpenIMAJ (which back in the day was required as at that time only 1.0 was available with 
