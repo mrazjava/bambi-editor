@@ -27,3 +27,26 @@ created in 2013, then left unattended. As the author of the original, returning 
 have plans to fix project structure, the build, and add new features. Except for this readme, I pulled git repo 
 from sourceforge in completely original state with broken build issues and everything else. The initial checkin 
 is tagged as 0.9.2 release and any further development will follow.
+
+## Building
+First, build reusable artifacts:
+```
+cd bambi/
+mvn clean install
+```
+Next build editor (webstart is deprecated and no longer supported):
+```
+cd bambi-editor/
+mvn clean package -P app -Dclient= -Dsignalias=selfsigned -Dsignpass=password
+```
+
+## Release Notes
+
+### 0.9.2.1 - April 6, 2018
+Fixed build problems. Deprecated webstart (no longer supported).
+
+### 0.9.2 - May 9, 2014
+Last release pushed to SourceForge with compiled binary. Uploaded SourceForge binary works well but the source 
+build is broken and needs fixes. For example, contains hard coded paths to system dependencies (eg: jfx) and 
+refers to custom built OpenIMAJ (which back in the day was required as at that time only 1.0 was available with 
+some critical bugs).

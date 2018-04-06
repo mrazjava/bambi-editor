@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.zimowski.bambi</groupId>
 		<artifactId>bambi</artifactId>
-		<version>${global.version}</version>
+		<version>0.9.2.1</version>
 		<relativePath>../bambi/pom.xml</relativePath>
 	</parent>
 
@@ -215,7 +215,7 @@
 			</build>
 		</profile>
 	</profiles>
-
+<!--
 	<repositories>
 		<repository>
 			<id>OpenIMAJ maven releases repository</id>
@@ -226,15 +226,10 @@
 			<url>http://snapshots.openimaj.org</url>
 		</repository>
 	</repositories>
-
+-->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
-	<organization>
-		<name>Bambi Software Foundation</name>
-		<url>http://www.zimowski.org/bambisoft</url>
-	</organization>
 
 	<developers>
 		<developer>
@@ -242,12 +237,10 @@
 			<name>Adam Zimowski</name>
 			<email>mrazjava@gmail.com</email>
 			<url>http://www.zimowski.prg</url>
-			<organization>Bambi Software Foundation</organization>
-			<organizationUrl>http://www.zimowski.org/bambisoft</organizationUrl>
 			<roles>
 				<role>admin, developer</role>
 			</roles>
-			<timezone>-5</timezone>
+			<timezone>+1</timezone>
 		</developer>
 	</developers>
 
@@ -280,17 +273,17 @@
 		<dependency>
 			<groupId>org.openimaj</groupId>
 			<artifactId>image-processing</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openimaj</groupId>
 			<artifactId>core-video-capture</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openimaj</groupId>
 			<artifactId>core-image</artifactId>
-			<version>1.1.1-CUSTOM</version>
+			<version>1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.zimowski.bambi</groupId>
@@ -307,7 +300,7 @@
 			<artifactId>jnlp-api</artifactId>
 			<version>5.0</version>
 			<scope>system</scope>
-			<systemPath>/usr/lib/jvm/java-7-oracle/jre/lib/javaws.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/javaws.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>

@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.zimowski.bambi</groupId>
 		<artifactId>bambi</artifactId>
-		<version>${global.version}</version>
+		<version>0.9.2.1</version>
 		<relativePath>../bambi/pom.xml</relativePath>
 	</parent>
 
@@ -39,7 +39,7 @@
 			<artifactId>javafx-runtime</artifactId>
 			<version>2.0.4</version>
 			<scope>system</scope>
-			<systemPath>/usr/lib/jvm/java-7-oracle/jre/lib/jfxrt.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/jfxrt.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.imgscalr</groupId>
