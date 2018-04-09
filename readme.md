@@ -61,7 +61,12 @@ Desktop edition:
 ```
 mvn clean package -P app
 ```
-or, webstart addition:
+To start the editor application invoke the script:
+```
+cd bambi-editor/target/
+./bambi.sh
+```
+You can also build editor in webstart edition:
 ```
 mvn clean package -P ws -Dclient= -Dsignalias=selfsigned -Dsignpass=password
 ```
