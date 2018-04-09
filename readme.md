@@ -53,20 +53,38 @@ First, build reusable artifacts:
 cd bambi/
 mvn clean install
 ```
-Next build editor (webstart is deprecated and no longer supported):
+Next build the editor:
 ```
 cd bambi-editor/
-mvn clean package -P app -Dclient= -Dsignalias=selfsigned -Dsignpass=password
 ```
+Desktop edition:
+```
+mvn clean package -P app
+```
+or, webstart addition:
+```
+mvn clean package -P ws -Dclient= -Dsignalias=selfsigned -Dsignpass=password
+```
+If you've built editor for webstart deployment, you need to generate webstart deployer:
+```
+cd bambi-webstart/
+mvn clean package -Djnlp.host=localhost -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type=
+```
+The deployer is used to show splash screen with a progress bar during the download of the editor. It is defined 
+in `src/main/resources/bambi-core.jnlp`.
 
 ## Release Notes
 
+### 0.9.2.2
+*April 9, 2018* 
+Further build cleanup + readme documentation.
+
 ### 0.9.2.1 
-*April 6, 2018*
-Fixed build problems. Deprecated webstart (no longer supported).
+*April 6, 2018* 
+Fixed build problems.
 
 ### 0.9.2 
-*May 9, 2014*
+*May 9, 2014* 
 Last release pushed to SourceForge with compiled binary. Uploaded SourceForge binary works well but the source 
 build is broken and needs fixes. For example, contains hard coded paths to system dependencies (eg: jfx) and 
 refers to custom built OpenIMAJ (which back in the day was required as at that time only 1.0 was available with 
