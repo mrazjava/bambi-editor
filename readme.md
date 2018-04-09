@@ -23,8 +23,7 @@ For more information and to try BambiEditor's web uploading capabilities visit o
 
 ## Screenshots
 Cam in action on Windows 8
-![Cam in Action Windows 8](https://github.com/mrazjava/bambi-editor/blob/master/images/cam_in_action_windows.png | width=400)
-<img src="/images/cam_in_action_windows.png" width="400"/>
+<img src="/images/cam_in_action_windows.png" width="500" style="border:solid 1px red;"/>
 
 Cam in action on Ubuntu 13.04
 ![Cam in Action Ubuntu 13.04](/images/cam_in_action_ubuntu.png?raw=true&x=1)
