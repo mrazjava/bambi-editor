@@ -23,6 +23,7 @@ For more information and to try BambiEditor's web uploading capabilities visit o
 
 ## Screenshots
 <img src="/images/cam_in_action_windows.png" width="500" /> 
+
 > *Cam in action on Windows 8*
 
 Cam in action on Ubuntu 13.04
