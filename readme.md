@@ -22,8 +22,7 @@ For more information and to try BambiEditor's web uploading capabilities visit o
  - Plugin Architecture
 
 ## Screenshots
-<img src="/images/cam_in_action_windows.png" width="500" />
-*Cam in action on Windows 8*
+<img src="/images/cam_in_action_windows.png" width="500" />*Cam in action on Windows 8*
 
 Cam in action on Ubuntu 13.04
 ![Cam in Action Ubuntu 13.04](/images/cam_in_action_ubuntu.png?raw=true&x=1)
