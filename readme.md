@@ -28,6 +28,18 @@ For more information and to try BambiEditor's web uploading capabilities visit o
 > *Cam in action on Ubuntu 13.04*
 <img src="/images/cam_in_action_ubuntu.png" width="700" />
 
+> *Image Edit Screen (OS X Mountain Lion)*
+<img src="/images/img_edit_osx.png" width="700" />
+
+> *Upload Plugin (Ubuntu Linux 13.04)*
+<img src="/images/upload_plugin_ubuntu.png" width="700" />
+
+> *Custom WYSIWYG Print (Ubuntu Linux 13.04)*
+<img src="/images/wysiwyg_print_ubuntu.png" width="700" />
+
+> *Daemonize Filter (Ubuntu Linux 13.04)*
+<img src="/images/deamonize_filter_ubuntu.png" width="700" />
+
 ## Project Origins
 This is a port of a project from [sourceforge](https://sourceforge.net/projects/bambieditor/). Bambi Editor was 
 created in 2013, then left unattended. As the author of the original, returning to it after several years, I 
