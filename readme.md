@@ -63,7 +63,8 @@ mvn clean package -P app
 ```
 To start the editor application invoke the script:
 ```
-cd bambi-editor/target/
+cd bambi-editor/profiles/app/
+chmod +x bambi.sh
 ./bambi.sh
 ```
 You can also build editor in webstart edition:

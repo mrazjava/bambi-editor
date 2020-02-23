@@ -14,6 +14,4 @@ make bambi.sh executable (chmod +x bambi.sh), then invoke it
 BambiEditor is and always will be free software. BambiEditor is released 
 under GPL with one additional clause, see license.txt.
 
-If you experience problems, head over to https://sourceforge.net/projects/bambieditor 
-and submit a ticket. We take tickets very seriously as they improve the 
-software.
+If you experience problems, please create issue @ https://github.com/mrazjava/bambi-editor/issues
