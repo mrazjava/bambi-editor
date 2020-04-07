@@ -41,7 +41,7 @@ For more information and to try BambiEditor's web uploading capabilities visit o
 <img src="/images/deamonize_filter_ubuntu.png" width="700" />
 
 ## Project Origins
-This is a port from [sourceforge](https://sourceforge.net/projects/bambieditor/) where I originally published bambi to in 2013, then left unattended. During github migration I cleaned this project up, applied few fixed but no major new features, yet :-) The initial checkin is tagged as 0.9.2 release and any further development will follow.
+This is a port from [sourceforge](https://sourceforge.net/projects/bambieditor/) where I originally published bambi to in 2013, then left unattended. During github migration I cleaned this project up, applied few fixes but no major new features, yet :-) The initial checkin is tagged as 0.9.2 release and any further development will follow.
 
 I do have plans to add new features, just never enough time.
 
