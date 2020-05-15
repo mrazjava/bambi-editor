@@ -61,7 +61,7 @@ mvn clean package -P app
 ```
 To start the editor application invoke the script:
 ```
-cd bambi-editor/profiles/app/
+cd profiles/app/
 chmod +x bambi.sh
 ./bambi.sh
 ```
@@ -78,6 +78,12 @@ The deployer is used to show splash screen with a progress bar during the downlo
 in `src/main/resources/bambi-core.jnlp`.
 
 ## Release Notes
+
+### 0.9.2.3
+*May 15, 2020*:
+- Upgraded log4j to the latest version. This addresses security vulnerability reported by github dependabot
+- Fixed `javax.xml.bind` package not found.
+- Updated application Home screen with new github host ref (removed sourceforge refs)
 
 ### 0.9.2.2
 *April 9, 2018*: 

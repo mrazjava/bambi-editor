@@ -3,7 +3,7 @@
     <information>
         <title>BambiEditor Live</title>
         <vendor>mrazjava</vendor>
-        <homepage href="http://bambieditor.sourceforge.net"/>
+        <homepage href="https://github.com/mrazjava/bambi-editor"/>
         <icon href="bambi_splash.png" kind="splash"/>
     </information>
 	<security>

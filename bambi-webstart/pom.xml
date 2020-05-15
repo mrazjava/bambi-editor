@@ -4,8 +4,8 @@
 
 	<!-- ===================== localhost build: ============================ -->
 	<!-- mvn clean package -Djnlp.host=localhost -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
-	<!-- ===================== sourceforge build: ========================== -->
-	<!-- mvn clean package -Djnlp.host=bambieditor.sourceforge.net -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
+	<!-- ===================== web deploy build: ========================== -->
+	<!-- mvn clean package -Djnlp.host=REPLACE_WITH_YOUR_WEB_HOST -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
 	<!-- ===================== sign existing jars:========================== -->
 	<!-- mvn antrun:run -->
 
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.zimowski.bambi</groupId>
 		<artifactId>bambi</artifactId>
-		<version>0.9.2.2</version>
+		<version>0.9.2.3</version>
 		<relativePath>../bambi/pom.xml</relativePath>
 	</parent>
 
