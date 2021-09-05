@@ -1,177 +1,182 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<!-- ===================== localhost build: ============================ -->
-	<!-- mvn clean package -Djnlp.host=localhost -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
-	<!-- ===================== web deploy build: ========================== -->
-	<!-- mvn clean package -Djnlp.host=REPLACE_WITH_YOUR_WEB_HOST -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
-	<!-- ===================== sign existing jars:========================== -->
-	<!-- mvn antrun:run -->
+    <!-- ===================== localhost build: ============================ -->
+    <!-- mvn clean package -Djnlp.host=localhost -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
+    <!-- ===================== web deploy build: ========================== -->
+    <!-- mvn clean package -Djnlp.host=REPLACE_WITH_YOUR_WEB_HOST -Dupload.dir= -Dsignalias=selfsigned -Dsignpass=password -Dclient= -Dprop.type= -->
+    <!-- ===================== sign existing jars:========================== -->
+    <!-- mvn antrun:run -->
 
-	<name>bambi-webstart</name>
+    <name>bambi-webstart</name>
 
-	<parent>
-		<groupId>org.zimowski.bambi</groupId>
-		<artifactId>bambi</artifactId>
-		<version>0.9.2.3</version>
-		<relativePath>../bambi/pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>org.zimowski.bambi</groupId>
+        <artifactId>bambi</artifactId>
+        <version>0.9.2.4</version>
+        <relativePath>../bambi/pom.xml</relativePath>
+    </parent>
 
-	<artifactId>bambi-webstart</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>bambi-webstart</artifactId>
+    <packaging>jar</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jnlp.host>localhost</jnlp.host>
-		<jnlp.codebase>/bambi</jnlp.codebase>
-		<upload.dir>ws/</upload.dir>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jnlp.host>localhost</jnlp.host>
+        <jnlp.codebase>/bambi</jnlp.codebase>
+        <upload.dir>ws/</upload.dir>
+    </properties>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/java/</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-			<resource>
-				<directory>src/main/resources/</directory>
-				<excludes>
-					<exclude>**/*</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<inherited>true</inherited>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-						</manifest>
-						<manifestEntries>
-							<Permissions>all-permissions</Permissions>
-							<Codebase>http://${jnlp.host}${jnlp.codebase}/</Codebase>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>ant1</id>
-						<phase>prepare-package</phase>
-						<configuration>
-							<target>
-								<copy todir="target/">
-									<fileset dir="src/main/resources/${client}">
-										<include name="*jnlp*" />
-										<include name="bambi${prop.type}.properties"  />
-										<include name="start${prop.type}.html" />
-									</fileset>
-									<filterset>
-										<filter token="url" value="${jnlp.host}" />
-										<filter token="g.version" value="${global.version}" />
-										<filter token="p.version" value="${project.version}" />
-										<filter token="codebase" value="${jnlp.codebase}" />
-										<filter token="upload.dir" value="${upload.dir}" />
-									</filterset>
-								</copy>
-								<move file="target/bambi${prop.type}.properties" tofile="target/bambi.properties"/>
-								<move file="target/start${prop.type}.html" tofile="target/start.html"/>
-								<replace token="{url}" value="${jnlp.host}" dir="target/">
-									<include name="bambi.properties" />
-								</replace>
-								<replace token="{g.version}" value="${global.version}" dir="target/">
-									<include name="start.html" />
-								</replace>
-								<jar destfile="target/bambi-config${prop.type}-${global.version}.jar">
-									<file file="target/bambi.properties" />
-									<file file="target/start.html" />
-									<fileset dir="src/main/resources/${client}">
-										<include name="log4j.xml" />
-										<include name="*.gif" />
-										<include name="*.jpg" />
-										<include name="*.jpeg" />
-										<include name="*.png" />
-									</fileset>
-									<fileset dir="../bambi-editor/src/main/java/org/zimowski/bambi/editor/studio/resources/toolbar/">
-										<include name="open24x24.png" />
-										<include name="upload24x24.png" />
-										<include name="webcam24x24.png" />
-									</fileset>
-									<manifest>
-										<attribute name="Built-By" value="Maven AntRun" />
-										<attribute name="Implementation-Vendor" value="mrazjava" />
-										<attribute name="Implementation-Title" value="BambiEditor" />
-										<attribute name="Implementation-Version" value="${global.version}" />
-										<attribute name="Permissions" value="all-permissions" />
-									</manifest>
-								</jar>
-								<delete>
-									<file file="target/bambi.properties" />
-								</delete>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-cli</id>
-						<phase>package</phase>
-						<configuration>
-							<target>
-								<signjar jar="target/bambi-webstart-${project.version}.jar" tsaurl="http://timestamp.digicert.com" 
-									alias="${signalias}" storepass="${signpass}" keystore="../bambi/sign/${client}keystore.jks" />
-								<signjar jar="target/bambi-config${prop.type}-${global.version}.jar" tsaurl="http://timestamp.digicert.com"
-									alias="${signalias}" storepass="${signpass}" keystore="../bambi/sign/${client}keystore.jks" />
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	
-<!-- 	<profiles> -->
-<!-- 		<profile> -->
-<!-- 			<id>sign-ws</id> -->
-<!-- 			<build> -->
-<!-- 				<plugins> -->
-<!-- 					<plugin> -->
-<!-- 						<artifactId>maven-antrun-plugin</artifactId> -->
-<!-- 						<executions> -->
-<!-- 							<execution> -->
-<!-- 								<id>ant-sign-ws</id> -->
-<!-- 							</execution> -->
-<!-- 						</executions> -->
-<!-- 					</plugin> -->
-<!-- 				</plugins> -->
-<!-- 			</build> -->
-<!-- 		</profile> -->
-<!-- 		<profile> -->
-<!-- 			<id>sign-conf</id> -->
-<!-- 		</profile> -->
-<!-- 	</profiles> -->
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java/</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources/</directory>
+                <excludes>
+                    <exclude>**/*</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <inherited>true</inherited>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Permissions>all-permissions</Permissions>
+                            <Codebase>http://${jnlp.host}${jnlp.codebase}/</Codebase>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ant1</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <copy todir="target/">
+                                    <fileset dir="src/main/resources/${client}">
+                                        <include name="*jnlp*"/>
+                                        <include name="bambi${prop.type}.properties"/>
+                                        <include name="start${prop.type}.html"/>
+                                    </fileset>
+                                    <filterset>
+                                        <filter token="url" value="${jnlp.host}"/>
+                                        <filter token="g.version" value="${global.version}"/>
+                                        <filter token="p.version" value="${project.version}"/>
+                                        <filter token="codebase" value="${jnlp.codebase}"/>
+                                        <filter token="upload.dir" value="${upload.dir}"/>
+                                    </filterset>
+                                </copy>
+                                <move file="target/bambi${prop.type}.properties" tofile="target/bambi.properties"/>
+                                <move file="target/start${prop.type}.html" tofile="target/start.html"/>
+                                <replace token="{url}" value="${jnlp.host}" dir="target/">
+                                    <include name="bambi.properties"/>
+                                </replace>
+                                <replace token="{g.version}" value="${global.version}" dir="target/">
+                                    <include name="start.html"/>
+                                </replace>
+                                <jar destfile="target/bambi-config${prop.type}-${global.version}.jar">
+                                    <file file="target/bambi.properties"/>
+                                    <file file="target/start.html"/>
+                                    <fileset dir="src/main/resources/${client}">
+                                        <include name="log4j.xml"/>
+                                        <include name="*.gif"/>
+                                        <include name="*.jpg"/>
+                                        <include name="*.jpeg"/>
+                                        <include name="*.png"/>
+                                    </fileset>
+                                    <fileset
+                                            dir="../bambi-editor/src/main/java/org/zimowski/bambi/editor/studio/resources/toolbar/">
+                                        <include name="open24x24.png"/>
+                                        <include name="upload24x24.png"/>
+                                        <include name="webcam24x24.png"/>
+                                    </fileset>
+                                    <manifest>
+                                        <attribute name="Built-By" value="Maven AntRun"/>
+                                        <attribute name="Implementation-Vendor" value="mrazjava"/>
+                                        <attribute name="Implementation-Title" value="BambiEditor"/>
+                                        <attribute name="Implementation-Version" value="${global.version}"/>
+                                        <attribute name="Permissions" value="all-permissions"/>
+                                    </manifest>
+                                </jar>
+                                <delete>
+                                    <file file="target/bambi.properties"/>
+                                </delete>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <signjar jar="target/bambi-webstart-${project.version}.jar"
+                                         tsaurl="http://timestamp.digicert.com"
+                                         alias="${signalias}" storepass="${signpass}"
+                                         keystore="../bambi/sign/${client}keystore.jks"/>
+                                <signjar jar="target/bambi-config${prop.type}-${global.version}.jar"
+                                         tsaurl="http://timestamp.digicert.com"
+                                         alias="${signalias}" storepass="${signpass}"
+                                         keystore="../bambi/sign/${client}keystore.jks"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-	<dependencies>
-		<dependency>
-			<groupId>javax.jnlp</groupId>
-			<artifactId>jnlp-api</artifactId>
-			<version>5.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/javaws.jar</systemPath>
-		</dependency>
-	</dependencies>
-	<version>1.1.0</version>
+    <!-- 	<profiles> -->
+    <!-- 		<profile> -->
+    <!-- 			<id>sign-ws</id> -->
+    <!-- 			<build> -->
+    <!-- 				<plugins> -->
+    <!-- 					<plugin> -->
+    <!-- 						<artifactId>maven-antrun-plugin</artifactId> -->
+    <!-- 						<executions> -->
+    <!-- 							<execution> -->
+    <!-- 								<id>ant-sign-ws</id> -->
+    <!-- 							</execution> -->
+    <!-- 						</executions> -->
+    <!-- 					</plugin> -->
+    <!-- 				</plugins> -->
+    <!-- 			</build> -->
+    <!-- 		</profile> -->
+    <!-- 		<profile> -->
+    <!-- 			<id>sign-conf</id> -->
+    <!-- 		</profile> -->
+    <!-- 	</profiles> -->
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.jnlp</groupId>
+            <artifactId>jnlp-api</artifactId>
+            <version>5.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/javaws.jar</systemPath>
+        </dependency>
+    </dependencies>
+    <version>1.1.0</version>
 </project>
